@@ -19,9 +19,7 @@ fi
 (( t_long_break_min=t_long_break/60 ))
 
 # make trap to notify on kill signal
-set_trap() {
-  trap 'notify-send "bashbreak" "Exited."; echo "`date +"%H:%M"` Exiting bashbreak."; exit' SIGINT SIGTERM SIGKILL
-}
+trap 'notify-send "bashbreak" "Exited."; echo "`date +"%H:%M"` Exiting bashbreak."; exit' SIGINT SIGTERM SIGKILL
 
 short_break() {
   for i in `seq 1 $n_short_break`
@@ -67,7 +65,6 @@ echo "`date +"%H:%M"` $msg" >&1
 notify-send "bashbreak" "$msg" -t 10000
 while true 
 do
-  set_trap
   short_break $n_short_break
   sleep $t_work
   long_break
