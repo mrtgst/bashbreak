@@ -14,12 +14,18 @@ You can specify the number of work sessions you want by running `bashbreak` with
 
 	$ bashbreak -n 4
 
-You can change the break and work sprint durations. Type `bashbreak -h` to see all available commands:
+Type `bashbreak -h` to see all available commands:
 
+	Use:
+	        bashbreak [OPTION]...
 
+	Options:
+	 -n             Specify number of work sessions
+	 -h             Print this help
+	 -q             Quiet mode (no output to stdout)
 
 ## Installation
-
+Link or copy `bashbreak` to a folder in your shell's path variable.
 
 
 ## Dependencies
