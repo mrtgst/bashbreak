@@ -88,7 +88,7 @@ done
 # main program
 main() {
   # make trap to notify on kill signal
-  trap 'notify-send "bashbreak" "Exited."; echo "`date +"%H:%M"` Exiting bashbreak."; exit' SIGINT SIGTERM
+  trap 'notify-send "bashbreak" "Terminating."; echo "`date +"%H:%M"` Terminating."; exit' SIGINT SIGTERM
 
   if [ $n_session -eq 0 ]; then
     msg="Starting work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
