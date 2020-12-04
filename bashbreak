@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.2.0"
+version="0.2.1"
 # exit if instance already running
 pcount=`pgrep --count bashbreak`
 if [ $pcount -gt 1 ]
@@ -11,9 +11,9 @@ fi
 # default parameters
 n_session=0 # number of work sessions, 0 means infinite
 t_work=600 # work sprint time in seconds 
-t_short_break=60 # short break in seconds
+t_short_break=600 # short break in seconds
 t_long_break=900 # long break in seconds
-n_short_break=3 # number of short breaks before long break
+n_short_break=4 # number of short breaks before long break
 quiet=false
 
 # convert time to ms or min
@@ -28,8 +28,7 @@ help() {
 }
 
 short_break() {
-  for i in `seq 1 $n_short_break`
-  do
+  for i in `seq 1 $n_short_break`; do
 	msg="Take a $t_short_break s break. ($i/$1)"
 	sleep $t_work
 	echo "`date +"%H:%M"` $msg" >&1
@@ -37,7 +36,6 @@ short_break() {
     sleep $t_short_break
 	# continue only if user is not idle (requires xprintidle)
     check_idle
-	i=i+1
   done
 }
 
@@ -50,12 +48,10 @@ long_break() {
 }
 
 check_idle() {
-  if ! [ -x '$(command -v xprintidle)' ]
-  then
+  if ! [ -x '$(command -v xprintidle)' ]; then
     t_idle=`xprintidle` # user idle time in ms
     (( t_idle_=$t_idle+1 ))
-    while [ $t_idle_ -ge $t_idle ] 
-    do
+    while [ $t_idle_ -ge $t_idle ]; do
       sleep 1
       t_idle_=`xprintidle`
     done
@@ -69,26 +65,20 @@ check_idle() {
 while getopts ":n::hq" OPT ; do
   case $OPT in
 
-    h)
-    ## print help and exit
-    help
-    exit;;
+    h) # print help and exit
+    help; exit;;
 
     n)
     n_session=$OPTARG;;
 
-    q)
-    # suppress output to stdout 
+    q) # suppress output to stdout 
     quiet=true;;
 
-    \?)
-    ## print if unknown option supplied
+    \?) # print if unknown option supplied
     printf '%b' "Invalid option: -""$OPTARG""\n\n"
-    help
-    exit;;
+    help; exit;;
     
-    :)
-    ## print if no option arguments supplied
+    :) # print if no option arguments supplied
     printf '%b' "Option -""$OPTARG"" requires an argument.\n"
     exit;;
     
@@ -98,7 +88,7 @@ done
 # main program 
 main() {
   # make trap to notify on kill signal
-  trap 'notify-send "bashbreak" "Exited."; echo "`date +"%H:%M"` Exiting bashbreak."; exit' SIGINT SIGTERM SIGKILL
+  trap 'notify-send "bashbreak" "Exited."; echo "`date +"%H:%M"` Exiting bashbreak."; exit' SIGINT SIGTERM
 
   if [ $n_session -eq 0 ]; then 
     msg="Starting work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
@@ -118,23 +108,16 @@ main() {
       short_break $n_short_break
       sleep $t_work
       long_break
-      i=i+1
     done
   else
     for i in `seq 1 $n_session`; do
       short_break $n_short_break
       sleep $t_work
       long_break
-      i=i+1
     done
   fi
 }
 
 main
-# run main if options with correct arguments OR no options were passed
-#if [ $OPTIND -eq 1 ] || [ $OPTIND -eq 3 ]
-#then 
-#  main
-#fi
 
 exit
