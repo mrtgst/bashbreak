@@ -32,7 +32,7 @@ short_break() {
     msg="Take a $t_short_break s break. ($i/$1)"
     sleep $t_work
     echo "`date +"%H:%M"` $msg" >&1
-    notify-send "bashbreak" "$msg" -t "$t_short_break_ms"
+    notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=string:transient:true
     sleep $t_short_break
     # continue only if user is not idle (requires xprintidle)
     check_idle
@@ -42,7 +42,7 @@ short_break() {
 long_break() {
   msg="Take a $t_long_break_min min break."
   echo "`date +"%H:%M"` $msg" >&1
-  notify-send "bashbreak" "$msg" -t "$t_long_break_ms"
+  notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=string:transient:true 
   sleep $t_long_break
   check_idle
 }
@@ -91,16 +91,18 @@ main() {
   trap 'notify-send "bashbreak" "Terminating."; echo "`date +"%H:%M"` Terminating."; exit' SIGINT SIGTERM
 
   if [ $n_session -eq 0 ]; then
-    msg="Starting work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
+    start_msg="Starting work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
+  elif [ $n_session -eq 1 ]; then
+    start_msg="Starting work session with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
   else
-    msg="Starting $n_session work session(s) with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
+    start_msg="Starting $n_session work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
   fi
 
+  # send start message
   if [ $quiet = false ]; then
-    echo "`date +"%H:%M"` $msg" >&1
+    echo "`date +"%H:%M"` $start_msg" >&1
   fi
-
-  notify-send "bashbreak" "$msg" -t 10000
+  notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=string:transient:true
 
   # main loop
   if [ $n_session -eq 0 ]; then
