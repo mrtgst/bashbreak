@@ -5,12 +5,12 @@ pcount=`pgrep --count bashbreak`
 if [ $pcount -gt 1 ]
 then
   echo "Another bashbreak instance is already running, kill it before starting a new one (type: pkill -9 bashbreak)."
-  exit	  
+  exit
 fi
 
 # default parameters
 n_session=0 # number of work sessions, 0 means infinite
-t_work=600 # work sprint time in seconds 
+t_work=600 # work sprint time in seconds
 t_short_break=60 # short break in seconds
 t_long_break=900 # long break in seconds
 n_short_break=4 # number of short breaks before long break
@@ -24,17 +24,17 @@ quiet=false
 
 # define functions
 help() {
-		printf '%b\n' "bashbreak v. $version\n\nUse:\n\tbashbreak [OPTION]... \n\nOptions:\n -n\t\tSpecify number of work sessions\n -h\t\tPrint this help\n -q\t\tQuiet mode (no output to stdout)"
+  printf '%b\n' "bashbreak v. $version\n\nUse:\n\tbashbreak [OPTION]... \n\nOptions:\n -n\t\tSpecify number of work sessions\n -h\t\tPrint this help\n -q\t\tQuiet mode (no output to stdout)"
 }
 
 short_break() {
   for i in `seq 1 $n_short_break`; do
-	msg="Take a $t_short_break s break. ($i/$1)"
-	sleep $t_work
-	echo "`date +"%H:%M"` $msg" >&1
-	notify-send "bashbreak" "$msg" -t "$t_short_break_ms"
+    msg="Take a $t_short_break s break. ($i/$1)"
+    sleep $t_work
+    echo "`date +"%H:%M"` $msg" >&1
+    notify-send "bashbreak" "$msg" -t "$t_short_break_ms"
     sleep $t_short_break
-	# continue only if user is not idle (requires xprintidle)
+    # continue only if user is not idle (requires xprintidle)
     check_idle
   done
 }
@@ -71,26 +71,26 @@ while getopts ":n::hq" OPT ; do
     n)
     n_session=$OPTARG;;
 
-    q) # suppress output to stdout 
+    q) # suppress output to stdout
     quiet=true;;
 
     \?) # print if unknown option supplied
     printf '%b' "Invalid option: -""$OPTARG""\n\n"
     help; exit;;
-    
+
     :) # print if no option arguments supplied
     printf '%b' "Option -""$OPTARG"" requires an argument.\n"
     exit;;
-    
+
   esac
 done
 
-# main program 
+# main program
 main() {
   # make trap to notify on kill signal
   trap 'notify-send "bashbreak" "Exited."; echo "`date +"%H:%M"` Exiting bashbreak."; exit' SIGINT SIGTERM
 
-  if [ $n_session -eq 0 ]; then 
+  if [ $n_session -eq 0 ]; then
     msg="Starting work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
   else
     msg="Starting $n_session work session(s) with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
@@ -102,8 +102,8 @@ main() {
 
   notify-send "bashbreak" "$msg" -t 10000
 
-  # main loop 
-  if [ $n_session -eq 0 ]; then 
+  # main loop
+  if [ $n_session -eq 0 ]; then
     while true; do
       short_break $n_short_break
       sleep $t_work
@@ -119,5 +119,4 @@ main() {
 }
 
 main
-
 exit
