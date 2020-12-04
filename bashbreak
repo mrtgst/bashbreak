@@ -11,7 +11,7 @@ fi
 # default parameters
 n_session=0 # number of work sessions, 0 means infinite
 t_work=600 # work sprint time in seconds 
-t_short_break=600 # short break in seconds
+t_short_break=60 # short break in seconds
 t_long_break=900 # long break in seconds
 n_short_break=4 # number of short breaks before long break
 quiet=false
