@@ -32,7 +32,7 @@ short_break() {
     msg="Take a $t_short_break s break. ($i/$1)"
     sleep $t_work
     echo "`date +"%H:%M"` $msg" >&1
-    notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=string:transient:true
+    notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
     sleep $t_short_break
     # continue only if user is not idle (requires xprintidle)
     check_idle
@@ -42,7 +42,7 @@ short_break() {
 long_break() {
   msg="Take a $t_long_break_min min break."
   echo "`date +"%H:%M"` $msg" >&1
-  notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=string:transient:true 
+  notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
   sleep $t_long_break
   check_idle
 }
@@ -102,7 +102,7 @@ main() {
   if [ $quiet = false ]; then
     echo "`date +"%H:%M"` $start_msg" >&1
   fi
-  notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=string:transient:true
+  notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=int:transient:1
 
   # main loop
   if [ $n_session -eq 0 ]; then
