@@ -92,22 +92,22 @@ while getopts $optstring OPT; do
       verbose=true;;
     n) 
       n_session=${OPTARG};;
-	b)
+    b)
       # change number of short breaks
       n_short_break=${OPTARG};;
-	s)
-	  # change length of short break
-	  t_short_break=${OPTARG};;
+    s)
+      # change length of short break
+      t_short_break=${OPTARG};;
     l)
       # change length of long break
-	  t_long_break=${OPTARG};;
-	w)
-	  # change time of work sprint
-	  t_work=${OPTARG};;
+      t_long_break=${OPTARG};;
+    w)
+      # change time of work sprint
+      t_work=${OPTARG};;
     \?)
       # print if unknown option supplied
-	  echo "Invalid option: -${OPTARG}."
-	  echo "Use -h to see available options."
+      echo "Invalid option: -${OPTARG}."
+      echo "Use -h to see available options."
       exit;;
     :)
       # print if no option arguments supplied
