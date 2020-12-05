@@ -1,5 +1,6 @@
 #!/bin/bash
 version="0.3.1"
+
 # exit if instance already running
 pcount=`pgrep --count bashbreak`
 if [ $pcount -gt 1 ]
@@ -85,12 +86,12 @@ function check_idle() {
 optstring=":hvn:b:s:l:w:"
 while getopts $optstring OPT; do
   case $OPT in
-    h) 
+    h)
       help; exit;;
     v)
       # output status messages to stdout
       verbose=true;;
-    n) 
+    n)
       n_session=${OPTARG};;
     b)
       # change number of short breaks
@@ -111,7 +112,7 @@ while getopts $optstring OPT; do
       exit;;
     :)
       # print if no option arguments supplied
-      printf '%b' "Option -""$OPTARG"" requires an argument.\n"
+      echo "Option -${OPTARG} requires an argument."
       exit;;
   esac
 done
