@@ -72,7 +72,7 @@ function check_idle() {
 }
 
 # CLI loop
-optstring=":hvn:m:s:l:w:"
+optstring=":hvn:b:s:l:w:"
 while getopts $optstring OPT; do
   case $OPT in
     h) 
@@ -82,7 +82,7 @@ while getopts $optstring OPT; do
       verbose=true;;
     n) 
       n_session=${OPTARG};;
-	m)
+	b)
       # change number of short breaks
       n_short_break=${OPTARG};;
 	s)
