@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.3.0"
+version="0.3.1"
 # exit if instance already running
 pcount=`pgrep --count bashbreak`
 if [ $pcount -gt 1 ]
@@ -18,7 +18,17 @@ verbose=false
 
 # define functions
 function help() {
-  printf '%b\n' "bashbreak v. $version\n\nUse:\n\tbashbreak [OPTION]... \n\nOptions:\n -n\t\tSpecify number of work sessions\n -h\t\tPrint this help\n -q\t\tQuiet mode (no output to stdout)"
+  echo "bashbreak v. ${version}"
+  echo "Use:"
+  echo "	bashbreak [OPTION]..."
+  echo "Options:"
+  echo "	-n		Specify number of work sessions"
+  echo "	-h		Print this help"
+  echo "	-v		Verbose. Print messages to console"
+  echo "	-b		Set number of short breaks"
+  echo "	-s		Set short break duration"
+  echo "	-l		Set long break duration"
+  echo "	-w		Set work sprint duration"
 }
 
 function convert_time() {
