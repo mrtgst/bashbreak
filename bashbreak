@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.2.1"
+version="0.3.0"
 # exit if instance already running
 pcount=`pgrep --count bashbreak`
 if [ $pcount -gt 1 ]
