@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.3.1"
+version="0.3.3"
 
 # exit if instance already running
 pcount=`pgrep --count bashbreak`
@@ -11,9 +11,9 @@ fi
 
 # default parameters
 n_session=0 # number of work sessions, 0 means infinite
-t_work=600 # work sprint time in seconds
-t_short_break=60 # short break in seconds
-t_long_break=900 # long break in seconds
+t_work=10 # work sprint time in minutes
+t_short_break=1 # short break in minutes
+t_long_break=15 # long break in minutes
 n_short_break=4 # number of short breaks before long break
 verbose=false
 
@@ -27,17 +27,18 @@ function help() {
   echo "	-h		Print this help"
   echo "	-v		Verbose. Print messages to console"
   echo "	-b		Set number of short breaks"
-  echo "	-s		Set short break duration"
-  echo "	-l		Set long break duration"
-  echo "	-w		Set work sprint duration"
+  echo "	-s		Set short break duration in minutes"
+  echo "	-l		Set long break duration in minutes"
+  echo "	-w		Set work sprint duration in minutes"
 }
 
 function convert_time() {
   # convert time to ms or min
-  (( t_work_min=t_work/60 ))
-  (( t_short_break_ms=t_short_break*1000 ))
-  (( t_long_break_ms=t_long_break*1000 ))
-  (( t_long_break_min=t_long_break/60 ))
+  (( t_work_s=t_work*60 ))
+  (( t_short_break_s=t_short_break*60 ))
+  (( t_short_break_ms=t_short_break_s*1000 ))
+  (( t_long_break_s=t_long_break*60 ))
+  (( t_long_break_ms=t_long_break_s*1000 ))
 }
 
 function echo_v() {
@@ -50,21 +51,21 @@ function echo_v() {
 
 function short_break() {
   for i in `seq 1 $n_short_break`; do
-    msg="Take a $t_short_break s break. ($i/$1)"
-    sleep $t_work
+    msg="Take a $t_short_break min break. ($i/$1)"
+    sleep $t_work_s
     echo_v "`date +"%H:%M"` $msg" >&1
     notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
-    sleep $t_short_break
+    sleep $t_short_break_s
     # continue only if user is not idle (requires xprintidle)
     check_idle
   done
 }
 
 function long_break() {
-  msg="Take a $t_long_break_min min break."
+  msg="Take a $t_long_break min break."
   echo_v "`date +"%H:%M"` $msg" >&1
   notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
-  sleep $t_long_break
+  sleep $t_long_break_s
   check_idle
 }
 
@@ -123,11 +124,11 @@ function main() {
   trap 'notify-send "bashbreak" "Terminating."; echo_v "`date +"%H:%M"` Terminating."; exit' SIGINT SIGTERM
   convert_time
   if [ $n_session -eq 0 ]; then
-    start_msg="Starting work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
+    start_msg="Starting work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break."
   elif [ $n_session -eq 1 ]; then
-    start_msg="Starting work session with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
+    start_msg="Starting work session with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break."
   else
-    start_msg="Starting $n_session work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
+    start_msg="Starting $n_session work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break."
   fi
 
   # send start message
@@ -138,13 +139,13 @@ function main() {
   if [ $n_session -eq 0 ]; then
     while true; do
       short_break $n_short_break
-      sleep $t_work
+      sleep $t_work_s
       long_break
     done
   else
     for i in `seq 1 $n_session`; do
       short_break $n_short_break
-      sleep $t_work
+      sleep $t_work_s
       long_break
     done
   fi
