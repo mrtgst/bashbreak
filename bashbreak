@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.4.0"
+version="0.4.1"
 
 # exit if instance already running
 pcount=$(pgrep --count bashbreak)
@@ -50,7 +50,7 @@ function echo_v() {
   # prints message if verbose option set
   local msg="${*}"
   if [[ "${verbose}" == true ]]; then
-    echo "${msg}"
+    echo "${msg}" >&1
   fi
 }
 
@@ -58,7 +58,7 @@ function short_break() {
   for i in $(seq 1 $n_short_break); do
     msg="Take a $t_short_break min break. ($i/$1)"
     sleep "$t_work_s"
-    echo_v "$(date +'%H:%M') $msg" >&1
+    echo_v "$(date +'%H:%M') $msg"
     notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
     sleep "$t_short_break_s"
     # continue only if user is not idle (requires xprintidle)
@@ -68,14 +68,14 @@ function short_break() {
 
 function long_break() {
   msg="Take a $t_long_break min break."
-  echo_v "$(date +'%H:%M') $msg" >&1
+  echo_v "$(date +'%H:%M') $msg"
   notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
   sleep "$t_long_break_s"
   check_idle
 }
 
 function check_idle() {
-  if ! [ -x "$(command -v xprintidle)" ]; then
+  if [ -x "$(command -v xprintidle)" ]; then
     t_idle=$(xprintidle) # user idle time in ms
     (( t_idle_=t_idle+1 ))
     while [ "$t_idle_" -ge "$t_idle" ]; do
@@ -83,9 +83,9 @@ function check_idle() {
       t_idle_=$(xprintidle)
     done
   else
-  echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle." >&2
+    echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle." >&2
   fi
-  echo_v "$(date +'%H:%M') Starting next work sprint." >&1
+  echo_v "$(date +'%H:%M') Starting next work sprint."
 }
 
 # CLI loop
@@ -137,7 +137,7 @@ function main() {
   fi
 
   # send start message
-  echo_v "$(date +'%H:%M') $start_msg" >&1
+  echo_v "$(date +'%H:%M') $start_msg"
   notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=int:transient:1
 
   # main loop
