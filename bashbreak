@@ -1,9 +1,9 @@
 #!/bin/bash
-version="0.3.3"
+version="0.4.0"
 
 # exit if instance already running
-pcount=`pgrep --count bashbreak`
-if [ $pcount -gt 1 ]
+pcount=$(pgrep --count bashbreak)
+if [ "$pcount" -gt 1 ]
 then
   echo "Another bashbreak instance is already running, kill it before starting a new one (type: pkill -9 bashbreak)."
   exit
@@ -30,6 +30,11 @@ function help() {
   echo "	-s		Set short break duration in minutes"
   echo "	-l		Set long break duration in minutes"
   echo "	-w		Set work sprint duration in minutes"
+  echo ""
+  echo "Example:"
+  echo "	To run bashbreak with modified settings:"
+  echo ""
+  echo "	bashbreak -n 8 -w 15 -b 3 -s 1 -l 15"
 }
 
 function convert_time() {
@@ -43,19 +48,19 @@ function convert_time() {
 
 function echo_v() {
   # prints message if verbose option set
-  local msg="${@}"
+  local msg="${*}"
   if [[ "${verbose}" == true ]]; then
     echo "${msg}"
   fi
 }
 
 function short_break() {
-  for i in `seq 1 $n_short_break`; do
+  for i in $(seq 1 $n_short_break); do
     msg="Take a $t_short_break min break. ($i/$1)"
-    sleep $t_work_s
-    echo_v "`date +"%H:%M"` $msg" >&1
+    sleep "$t_work_s"
+    echo_v "$(date +'%H:%M') $msg" >&1
     notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
-    sleep $t_short_break_s
+    sleep "$t_short_break_s"
     # continue only if user is not idle (requires xprintidle)
     check_idle
   done
@@ -63,24 +68,24 @@ function short_break() {
 
 function long_break() {
   msg="Take a $t_long_break min break."
-  echo_v "`date +"%H:%M"` $msg" >&1
+  echo_v "$(date +'%H:%M') $msg" >&1
   notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
-  sleep $t_long_break_s
+  sleep "$t_long_break_s"
   check_idle
 }
 
 function check_idle() {
-  if ! [ -x '$(command -v xprintidle)' ]; then
-    t_idle=`xprintidle` # user idle time in ms
-    (( t_idle_=$t_idle+1 ))
-    while [ $t_idle_ -ge $t_idle ]; do
+  if ! [ -x "$(command -v xprintidle)" ]; then
+    t_idle=$(xprintidle) # user idle time in ms
+    (( t_idle_=t_idle+1 ))
+    while [ "$t_idle_" -ge "$t_idle" ]; do
       sleep 1
-      t_idle_=`xprintidle`
+      t_idle_=$(xprintidle)
     done
   else
-    echo '`date +"%H:%M"` xprintidle not found. Not checking for user idle.' >&2
+  echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle." >&2
   fi
-  echo_v "`date +"%H:%M"` Starting next work sprint." >&1
+  echo_v "$(date +'%H:%M') Starting next work sprint." >&1
 }
 
 # CLI loop
@@ -121,31 +126,31 @@ done
 # main program
 function main() {
   # make trap to notify on kill signal
-  trap 'notify-send "bashbreak" "Terminating."; echo_v "`date +"%H:%M"` Terminating."; exit' SIGINT SIGTERM
+  trap 'notify-send "bashbreak" "Terminated."; echo_v "`date +"%H:%M"` Terminated."; exit' SIGINT SIGTERM
   convert_time
-  if [ $n_session -eq 0 ]; then
+  if [ "$n_session" -eq 0 ]; then
     start_msg="Starting work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break."
-  elif [ $n_session -eq 1 ]; then
+  elif [ "$n_session" -eq 1 ]; then
     start_msg="Starting work session with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break."
   else
     start_msg="Starting $n_session work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break."
   fi
 
   # send start message
-  echo_v "`date +"%H:%M"` $start_msg" >&1
+  echo_v "$(date +'%H:%M') $start_msg" >&1
   notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=int:transient:1
 
   # main loop
-  if [ $n_session -eq 0 ]; then
+  if [ "$n_session" -eq 0 ]; then
     while true; do
-      short_break $n_short_break
-      sleep $t_work_s
+      short_break "$n_short_break"
+      sleep "$t_work_s"
       long_break
     done
   else
-    for i in `seq 1 $n_session`; do
-      short_break $n_short_break
-      sleep $t_work_s
+    for i in $(seq 1 "$n_session"); do
+      short_break "$n_short_break"
+      sleep "$t_work_s"
       long_break
     done
   fi

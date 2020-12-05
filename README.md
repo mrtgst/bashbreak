@@ -18,19 +18,26 @@ Type `bashbreak -h` to see all available commands:
 
 	Use:
 	        bashbreak [OPTION]...
-
 	Options:
-	 -n             Specify number of work sessions
-	 -h             Print this help
-	 -q             Quiet mode (no output to stdout)
+	        -n              Specify number of work sessions
+	        -h              Print this help
+	        -v              Verbose. Print messages to console
+	        -b              Set number of short breaks
+	        -s              Set short break duration in minutes
+	        -l              Set long break duration in minutes
+	        -w              Set work sprint duration in minutes
+	
+	Example:
+	        To run bashbreak with modified settings:
+	
+	        bashbreak -n 8 -w 15 -b 3 -s 1 -l 15
 
 ## Installation
 Link or copy `bashbreak` to a folder in your shell's path variable.
-
 
 ## Dependencies
 `bashbreak` can run just in your terminal using bash builtins, but the desktop notifications and idle time checker have some further dependencies.
 
 To see desktop notifications you need `libnotify` and a notification daemon installed, which is standard on most Linux distros running a desktop environment such as GNOME, KDE, Cinnamon etc. If you have a more minimal install and use a window manager, see [https://wiki.archlinux.org/index.php/Desktop_notifications](https://wiki.archlinux.org/index.php/Desktop_notifications).
 
-To check for user idle time, `bashbreak` uses `xprintidle`. 
+To check for user idle time, `bashbreak` uses `xprintidle`, which further assumes you are running the X Window System.
