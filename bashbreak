@@ -16,15 +16,17 @@ t_long_break=900 # long break in seconds
 n_short_break=4 # number of short breaks before long break
 verbose=false
 
-# convert time to ms or min
-(( t_work_min=t_work/60 ))
-(( t_short_break_ms=t_short_break*1000 ))
-(( t_long_break_ms=t_long_break*1000 ))
-(( t_long_break_min=t_long_break/60 ))
-
 # define functions
 function help() {
   printf '%b\n' "bashbreak v. $version\n\nUse:\n\tbashbreak [OPTION]... \n\nOptions:\n -n\t\tSpecify number of work sessions\n -h\t\tPrint this help\n -q\t\tQuiet mode (no output to stdout)"
+}
+
+function convert_time() {
+  # convert time to ms or min
+  (( t_work_min=t_work/60 ))
+  (( t_short_break_ms=t_short_break*1000 ))
+  (( t_long_break_ms=t_long_break*1000 ))
+  (( t_long_break_min=t_long_break/60 ))
 }
 
 function echo_v() {
@@ -70,15 +72,28 @@ function check_idle() {
 }
 
 # CLI loop
-optstring=":hvn:"
+optstring=":hvn:m:s:l:w:"
 while getopts $optstring OPT; do
   case $OPT in
     h) 
       help; exit;;
+    v)
+      # output status messages to stdout
+      verbose=true;;
     n) 
       n_session=${OPTARG};;
-    v) 
-      verbose=true;; # output status messages to stdout
+	m)
+      # change number of short breaks
+      n_short_break=${OPTARG};;
+	s)
+	  # change length of short break
+	  t_short_break=${OPTARG};;
+    l)
+      # change length of long break
+	  t_long_break=${OPTARG};;
+	w)
+	  # change time of work sprint
+	  t_work=${OPTARG};;
     \?)
       # print if unknown option supplied
 	  echo "Invalid option: -${OPTARG}."
@@ -95,7 +110,7 @@ done
 function main() {
   # make trap to notify on kill signal
   trap 'notify-send "bashbreak" "Terminating."; echo_v "`date +"%H:%M"` Terminating."; exit' SIGINT SIGTERM
-
+  convert_time
   if [ $n_session -eq 0 ]; then
     start_msg="Starting work sessions with $t_work_min min work sprints and $t_short_break s short breaks $n_short_break times before a $t_long_break_min min long break."
   elif [ $n_session -eq 1 ]; then
