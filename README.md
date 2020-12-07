@@ -23,7 +23,6 @@ Type `bashbreak -h` to see all available commands:
 	Options:
 	        -n              Specify number of work sessions
 	        -h              Print this help
-	        -v              Verbose. Print messages to console
 	        -b              Set number of short breaks
 	        -B              Run process in background
 	        -s              Set short break duration in minutes
