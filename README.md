@@ -6,11 +6,11 @@ Taking regular breaks increases focus and prevents repetitive strain injury; it'
 
 ## Instructions 
 
-The basic idea is to have two kinds of breaks during a work session: short and long. By default, you have 10 min work sprints, separated by short breaks of 1 min and with a long break of 15 min after 4 work sprints. Thus, each "work session" totals 1 h. You can of course change the settings to your liking.
+The basic idea is to have two kinds of breaks during a work session: short and long. By default, you have 10 min work sprints, separated by short breaks of 1 min and with a long break of 15 min after 4 work sprints. Thus, each "work session" totals 1 h (including the breaks). You can of course change the settings to your liking.
 
 When a break is over, `bashbreak` checks if you are active at the computer before it starts the next work sprint.
 
-You can specify the number of work sessions you want by running `bashbreak` with the `-n` option. If you plan to work for a total of 4 work sessions, type:
+You can specify the number of work sessions you want by running `bashbreak` with the `-n` option. If you plan to work for a total of 4 work sessions (i.e., 4 hours with the default settings), type:
 
 	$ bashbreak -n 4
 
