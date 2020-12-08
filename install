@@ -1,0 +1,36 @@
+#!/bin/bash
+## This script will copy the bashbreak executable to /usr/local/bin.
+
+INSTALL_DIR="/usr/local/bin"
+CONF_DIR="/etc/bashbreak"
+USER_CONF_DIR="/home/$SUDO_USER/.config/bashbreak"
+CONF_FILE="bashbreak.conf"
+
+install() {
+	echo "Copying bashbreak to $1 ..."
+	cp bashbreak $1 || exit 1
+}
+
+create_config() {
+	echo "Copying default config file to $2/$1 ..." 
+	if ! [ -d "$2" ]; then
+		mkdir "$2" || exit 1 
+	fi
+	cp ./"$1" "$2" || exit 1 
+}
+
+while true; do
+	echo "This will install bashbreak to $INSTALL_DIR. Continue? (Y/n) " 
+	read -r ANS
+	if [ "$ANS" != "${ANS#[Nn]}" ] ; then
+		echo "Installation cancelled."
+   		exit	
+	else
+		install $INSTALL_DIR 
+		create_config $CONF_FILE $CONF_DIR
+		create_config $CONF_FILE $USER_CONF_DIR
+	fi
+	echo "Installation completed."
+	echo "Type 'bashbreak -h' to see available commands."
+	exit
+done

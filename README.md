@@ -23,26 +23,24 @@ Type `bashbreak -h` to see all available commands:
 	Options:
 	        -n              Specify number of work sessions
 	        -h              Print this help
-	        -b              Set number of short breaks
 	        -B              Run process in background
-	        -s              Set short break duration in minutes
-	        -S              Print how many short breaks until long break
-	        -l              Set long break duration in minutes
-	        -w              Set work sprint duration in minutes
-	        -q              Quit running session
-	
-	Example:
-	        To run bashbreak in the background with modified settings:
-	
-	        bashbreak -n 2 -w 15 -b 3 -s 1 -l 15 -B
+	        -s              Print status message (e.g. how many short breaks until long break)
+	        -q              Quit a running session
 
+## Installation and configuration
+To install, download this repo and run the install script: 
 
-## Installation
-Link or copy `bashbreak` to a folder in your shell's path variable.
+```
+git clone https://github.com/mrtgst/bashbreak.git
+cd bashbreak
+sudo ./install
+``` 
+
+This will copy `bashbreak` to `/usr/local/bin/` and a default configuration file to `/home/<user>/.config/bashbreak`. Edit the configuration file to change settings.
 
 ## Dependencies
 `bashbreak` can run just in your terminal using bash builtins, but the desktop notifications and idle time checker have some further dependencies.
 
-To see desktop notifications you need `libnotify` and a notification daemon installed, which is standard on most Linux distros running a desktop environment such as GNOME, KDE, Cinnamon etc. If you have a more minimal install and use a window manager, see [https://wiki.archlinux.org/index.php/Desktop_notifications](https://wiki.archlinux.org/index.php/Desktop_notifications).
+To see desktop notifications you need `libnotify` and a notification daemon installed, which is standard on most Linux distros running a desktop environment such as GNOME, KDE, LXDE etc. If you are not running a full DE, see [wiki.archlinux.org/index.php/Desktop_notifications](https://wiki.archlinux.org/index.php/Desktop_notifications).
 
 To check for user idle time, `bashbreak` uses `xprintidle`, which further assumes you are running the X Window System.
