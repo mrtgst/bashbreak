@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.6.0"
+version="0.6.1"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak/bashbreak.conf" ]; then 
@@ -7,7 +7,7 @@ if [ -e "$HOME/.config/bashbreak/bashbreak.conf" ]; then
 elif [ -e "/etc/bashbreak/bashbreak.conf" ]; then 
 	. "/etc/bashbreak/bashbreak.conf"
 else
-	. ./bashbreak.conf
+	. ./bashbreak.conf || exit 1
 fi
 
 # define functions
@@ -18,9 +18,9 @@ function help() {
   echo "Options:"
   echo "	-n		Specify number of work sessions"
   echo "	-h		Print this help"
-  echo "	-B		Run process in background"	
+  echo "	-B		Run session in background"
   echo "	-s		Print status message (e.g. how many short breaks until long break)"
-  echo "	-q		Quit running session"
+  echo "	-q		Quit a running session"
 }
 
 function print_start_msg() {
@@ -54,16 +54,22 @@ function echo_v() {
 }
 
 function short_break() {
-  # short break loop
+  # short break and work sprint loop. $1 sets number of breaks
   for i in $(seq 1 "$1"); do
-    N="$(( $1 - i ))" 
-	short_break_status="$N short breaks until long break."
-	write_mem "$short_break_status"
-    msg="Take a $t_short_break min break. ($short_break_status)"
+    n_work_sprint="$(( $1 - 1 ))" 
+	sprint_frac="$i/$n_work_sprint"
+	write_mem "$status"
+
+	# start next work sprint
+	status="Currently on work sprint $sprint_frac."
     sleep "$t_work_s"
+
+	# start short break
+	short_break_frac="$i/$1"
+    msg="Take a $t_short_break min break. ($short_break_frac)"
     echo_v "$(date +'%H:%M') $msg"
     notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
-	write_mem "$short_break_status"
+	write_mem "$status"
     sleep "$t_short_break_s"
     # continue only if user is not idle (requires xprintidle)
     check_idle
@@ -102,7 +108,7 @@ function create_mem() {
 
 function write_mem() {
   # write status to mem file
-  echo "$1 $2" > "$mem"
+  echo "$@" > "$mem"
 }
 
 function clear_mem() {

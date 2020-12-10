@@ -1,0 +1,65 @@
+#!/bin/sh
+
+INSTALL_DIR="/usr/local/bin"
+CONF_DIR="/etc/bashbreak"
+USER_CONF_DIR="/home/$SUDO_USER/.config/bashbreak"
+CONF_FILE="bashbreak.conf"
+
+install() {
+	echo "This will install bashbreak to $INSTALL_DIR. Continue? (Y/n) " 
+	read -r ANS
+	if [ "$ANS" != "${ANS#[Nn]}" ] ; then
+		echo "Installation cancelled."
+   		exit	
+	else
+		echo "Copying bashbreak to $INSTALL_DIR ..."
+		cp bashbreak "$INSTALL_DIR" || exit 1
+		create_config "$CONF_FILE" "$CONF_DIR"
+		create_config "$CONF_FILE" "$USER_CONF_DIR"
+	fi
+	echo "Installation completed."
+	echo "Type 'bashbreak -h' to see available commands."
+	exit
+}
+
+create_config() {
+	echo "Copying default config file to $2/$1 ..." 
+	if ! [ -d "$2" ]; then
+		mkdir "$2" || exit 1 
+	fi
+	cp ./"$1" "$2" || exit 1 
+}
+
+uninstall() {
+	echo "This will completely remove bashbreak and its config files. Continue? (Y/n) " 
+	read -r ANS
+	if [ "$ANS" != "${ANS#[Nn]}" ] ; then
+		echo "Uninstallation cancelled."
+   		exit	
+	else
+		if [ -e "$INSTALL_DIR/bashbreak" ]; then
+			rm -f "$INSTALL_DIR/bashbreak"
+		fi
+		if [ -e "$CONF_DIR/$CONF_FILE" ]; then
+			rm -f "$CONF_DIR/$CONF_FILE"
+			rmdir -f "$CONF_DIR"
+		fi
+		if [ -e "$USER_CONF_DIR/$CONF_FILE" ]; then
+			rm -f "$USER_CONF_DIR/$CONF_FILE"
+			rmdir -f "$USER_CONF_DIR"
+		fi
+	fi
+	echo "Uninstallation completed."
+	exit
+	
+}
+
+case "$1" in
+	"install")
+		install;;
+	"uninstall")
+		uninstall;;
+	*)
+		echo 'Unknown command. Use "install" or "uninstall".';;
+esac
+exit

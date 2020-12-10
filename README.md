@@ -33,10 +33,14 @@ To install, download this repo and run the install script:
 ```
 git clone https://github.com/mrtgst/bashbreak.git
 cd bashbreak
-sudo ./install
+sudo ./setup install
 ``` 
 
 This will copy `bashbreak` to `/usr/local/bin/` and a default configuration file to `/home/<user>/.config/bashbreak`. Edit the configuration file to change settings.
+
+## Uninstallation
+
+To remove bashbreak and its config files you can call the above setup-script with `sudo ./setup uninstall`. 
 
 ## Dependencies
 `bashbreak` can run just in your terminal using bash builtins, but the desktop notifications and idle time checker have some further dependencies.
