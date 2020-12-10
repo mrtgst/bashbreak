@@ -16,16 +16,7 @@ You can specify the number of work sessions you want by running `bashbreak` with
 
 By default, `bashbreak` runs in the current terminal so you may want to fork it to the background using the `-B` flag. You can quit a currently running session with `-q`.
 
-Type `bashbreak -h` to see all available commands:
-
-	Use:
-	        bashbreak [OPTION]...
-	Options:
-	        -n              Specify number of work sessions
-	        -h              Print this help
-	        -B              Run process in background
-	        -s              Print status message (e.g. how many short breaks until long break)
-	        -q              Quit a running session
+Type `bashbreak -h` to see all available commands.
 
 ## Installation and configuration
 To install, download this repo and run the install script: 
