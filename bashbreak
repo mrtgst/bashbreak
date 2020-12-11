@@ -118,12 +118,14 @@ function check_idle() {
   # check if user idle
   if [ -x "$(command -v xprintidle)" ]; then
     t_idle=$(xprintidle) # user idle time in ms
-    (( t_idle_=t_idle+1 ))
-    while [ "$t_idle_" -ge "$t_idle" ]; do
-	  write_mem "User idle"
-      sleep 1
-      t_idle_=$(xprintidle)
-    done
+	if [ "$t_idle" -gt 5000 ]; then
+      (( t_idle_=t_idle+1 ))
+      while [ "$t_idle_" -ge "$t_idle" ]; do
+	    write_mem "User idle"
+        sleep 1
+        t_idle_=$(xprintidle)
+      done
+	fi
   else
     echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle." >&2
   fi
@@ -217,14 +219,14 @@ function main() {
     # infinite number of sessions
     while true; do
       short_break "$n_short_break"
-      sleep "$t_work_s"
+      sleep_and_log "$t_work_s"
       long_break
     done
   else
 	# finite number of sessions
     for i in $(seq 1 "$n_session"); do
       short_break "$n_short_break"
-      sleep "$t_work_s"
+      sleep_and_log "$t_work_s"
       long_break
     done
   fi
