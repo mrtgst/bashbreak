@@ -1,9 +1,9 @@
 #!/bin/bash
-version="0.6.3"
+version="0.6.4"
 
 # source config file
-if [ -e "$HOME/.config/bashbreak/bashbreak.conf" ]; then 
-	. "$HOME/.config/bashbreak/bashbreak.conf"
+if [ -e "$HOME/.config/bashbreak.conf" ]; then 
+	. "$HOME/.config/bashbreak.conf"
 elif [ -e "/etc/bashbreak/bashbreak.conf" ]; then 
 	. "/etc/bashbreak/bashbreak.conf"
 else
