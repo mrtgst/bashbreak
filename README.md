@@ -27,7 +27,9 @@ cd bashbreak
 sudo ./setup install
 ``` 
 
-This will copy `bashbreak` to `/usr/local/bin/` and a default configuration file to `/home/<user>/.config/bashbreak`. Edit the configuration file to change settings.
+This will copy `bashbreak` to `/usr/local/bin/` and a default config file to `/etc/bashbreak/`.
+
+To create a user-specific config file that won't get reset on update, run `cp /etc/bashbreak/bashbreak.conf /home/<username>/.config/bashbreak.conf`.
 
 ## Uninstallation
 
