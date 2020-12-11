@@ -2,7 +2,6 @@
 
 INSTALL_DIR="/usr/local/bin"
 CONF_DIR="/etc/bashbreak"
-USER_CONF_DIR="/home/$SUDO_USER/.config/bashbreak"
 CONF_FILE="bashbreak.conf"
 
 install() {
@@ -15,7 +14,6 @@ install() {
 		echo "Copying bashbreak to $INSTALL_DIR ..."
 		cp bashbreak "$INSTALL_DIR" || exit 1
 		create_config "$CONF_FILE" "$CONF_DIR"
-		create_config "$CONF_FILE" "$USER_CONF_DIR"
 	fi
 	echo "Installation completed."
 	echo "Type 'bashbreak -h' to see available commands."
@@ -31,7 +29,7 @@ create_config() {
 }
 
 uninstall() {
-	echo "This will completely remove bashbreak and its config files. Continue? (Y/n) " 
+	echo "This will completely remove bashbreak and its config file. Continue? (Y/n) " 
 	read -r ANS
 	if [ "$ANS" != "${ANS#[Nn]}" ] ; then
 		echo "Uninstallation cancelled."
@@ -43,10 +41,6 @@ uninstall() {
 		if [ -e "$CONF_DIR/$CONF_FILE" ]; then
 			rm -f "$CONF_DIR/$CONF_FILE"
 			rmdir -f "$CONF_DIR"
-		fi
-		if [ -e "$USER_CONF_DIR/$CONF_FILE" ]; then
-			rm -f "$USER_CONF_DIR/$CONF_FILE"
-			rmdir -f "$USER_CONF_DIR"
 		fi
 	fi
 	echo "Uninstallation completed."
