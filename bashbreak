@@ -19,7 +19,7 @@ function help() {
   echo "	-n		Specify number of work sessions"
   echo "	-h		Print this help"
   echo "	-B		Run session in background"
-  echo "	-s		Print status message (e.g. how many short breaks until long break)"
+  echo "	-s		Print status message"
   echo "	-q		Quit a running session"
 }
 
