@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.6.1"
+version="0.6.2"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak/bashbreak.conf" ]; then 
@@ -53,24 +53,53 @@ function echo_v() {
   fi
 }
 
+function pretty_time() {
+  # takes a time in s and displays it in min and s
+  min=$(( $1 / 60 ))
+  sec=$(( $1 % 60 ))
+  echo "$min min $sec s"
+}
+
+function sleep_and_log() {
+  # first argument is time in s
+  t_sleep="$1"
+  next_event="$2"
+  j=0
+  while [ $j -le $t_sleep ]; do 
+    sec_remaining=$(( $t_sleep - $j ))
+	log_msg="$(pretty_time $sec_remaining) until next $next_event."
+	write_mem "$log_msg" 
+    sleep 1
+	let "j+=1"
+  done
+}
+
 function short_break() {
   # short break and work sprint loop. $1 sets number of breaks
   for i in $(seq 1 "$1"); do
+
+    # check what next event is
+	n=$(( $1 - $i )) 
+    if [ $n -ge 1 ]; then
+	  next_event="short break"
+    else
+	  next_event="long break"
+	fi
+
     n_work_sprint="$(( $1 - 1 ))" 
 	sprint_frac="$i/$n_work_sprint"
-	write_mem "$status"
 
 	# start next work sprint
-	status="Currently on work sprint $sprint_frac."
-    sleep "$t_work_s"
+	sleep_and_log "$t_work_s" "$next_event"
 
 	# start short break
 	short_break_frac="$i/$1"
     msg="Take a $t_short_break min break. ($short_break_frac)"
     echo_v "$(date +'%H:%M') $msg"
     notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
-	write_mem "$status"
-    sleep "$t_short_break_s"
+	next_event="work sprint"
+	sleep_and_log "$t_short_break_s" "$next_event"
+
     # continue only if user is not idle (requires xprintidle)
     check_idle
   done
@@ -81,7 +110,7 @@ function long_break() {
   msg="Take a $t_long_break min break."
   echo_v "$(date +'%H:%M') $msg"
   notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
-  sleep "$t_long_break_s"
+  sleep_and_log "$t_long_break_s" "work sprint"
   check_idle
 }
 
@@ -91,6 +120,7 @@ function check_idle() {
     t_idle=$(xprintidle) # user idle time in ms
     (( t_idle_=t_idle+1 ))
     while [ "$t_idle_" -ge "$t_idle" ]; do
+	  write_mem "User idle"
       sleep 1
       t_idle_=$(xprintidle)
     done
