@@ -12,7 +12,9 @@ When a break is over, `bashbreak` checks if you are active at the computer befor
 
 You can specify the number of work sessions you want by running `bashbreak` with the `-n` option. If you plan to work for a total of 4 work sessions (i.e., 4 hours with the default settings), type:
 
-	$ bashbreak -n 4
+```
+bashbreak -n 4
+```
 
 By default, `bashbreak` runs in the current terminal so you may want to fork it to the background using the `-B` flag. You can quit a currently running session with `-q`.
 
