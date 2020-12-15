@@ -67,7 +67,7 @@ function sleep_and_log() {
   j=0
   while [ $j -le $t_sleep ]; do 
     sec_remaining=$(( $t_sleep - $j ))
-	log_msg="$(pretty_time $sec_remaining) until next $next_event."
+	log_msg="$(pretty_time $sec_remaining) until $next_event."
 	write_mem "$log_msg" 
     sleep 1
 	let "j+=1"
