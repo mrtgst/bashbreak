@@ -74,39 +74,37 @@ function sleep_and_log() {
   done
 }
 
-function short_break() {
-  # short break and work sprint loop. $1 sets number of breaks
-  for i in $(seq 1 "$1"); do
+function work_session() {
+  # runs the (work sprint -> short break(s) -> long break) loop 
+  # $1 sets number of short breaks
+  if [ "$1" -ne 0 ]; then
+    for i in $(seq 1 "$1"); do
+      next_event="short break"
+      n=$(( $1 - $i )) 
+      n_work_sprint="$(( $1 - 1 ))" 
+      sprint_frac="$i/$n_work_sprint"
 
-    # check what next event is
-	n=$(( $1 - $i )) 
-    if [ $n -ge 1 ]; then
-	  next_event="short break"
-    else
-	  next_event="long break"
-	fi
+      # start work sprint
+      sleep_and_log "$t_work_s" "$next_event"
 
-    n_work_sprint="$(( $1 - 1 ))" 
-	sprint_frac="$i/$n_work_sprint"
-
-	# start next work sprint
+      # start short break
+      short_break_frac="$i/$1"
+      msg="Take a $t_short_break min break. ($short_break_frac)"
+      echo_v "$(date +'%H:%M') $msg"
+      notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
+      next_event="work sprint"
+      sleep_and_log "$t_short_break_s" "$next_event"
+      check_idle
+    done
+  else
+	# if only a long break is desired
+    next_event="long break"
+	# start work sprint
 	sleep_and_log "$t_work_s" "$next_event"
-
-	# start short break
-	short_break_frac="$i/$1"
-    msg="Take a $t_short_break min break. ($short_break_frac)"
-    echo_v "$(date +'%H:%M') $msg"
-    notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
-	next_event="work sprint"
-	sleep_and_log "$t_short_break_s" "$next_event"
-
-    # continue only if user is not idle (requires xprintidle)
     check_idle
-  done
-}
-
-function long_break() {
-  # long break loop
+  fi
+  # begin long break 
+  next_event="long break"
   msg="Take a $t_long_break min break."
   echo_v "$(date +'%H:%M') $msg"
   notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
@@ -218,16 +216,12 @@ function main() {
   if [ "$n_session" -eq 0 ]; then
     # infinite number of sessions
     while true; do
-      short_break "$n_short_break"
-      sleep_and_log "$t_work_s"
-      long_break
+	  work_session "$n_short_break"
     done
   else
 	# finite number of sessions
     for i in $(seq 1 "$n_session"); do
-      short_break "$n_short_break"
-      sleep_and_log "$t_work_s"
-      long_break
+	  work_session "$n_short_break"
     done
   fi
   clear_mem
