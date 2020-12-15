@@ -16,7 +16,9 @@ You can specify the number of work sessions you want by running `bashbreak` with
 bashbreak -n 4
 ```
 
-By default, `bashbreak` runs in the current terminal so you may want to fork it to the background using the `-B` flag. You can see the current status (i.e. how much time left until next break) with the `-s` flag and quit a currently running session with `-q`.
+By default, `bashbreak` runs in the current terminal so you may want to fork it to the background using the `-B` flag. You can quit a background session with `bashbreak -q`.
+
+You can see the current status (i.e. how much time left until next break) with `bashbreak -s`; a tip is to map this command to a keybind to quickly see the status as a notification.
 
 Type `bashbreak -h` to see all available commands.
 
