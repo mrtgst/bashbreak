@@ -3,11 +3,11 @@ version="0.6.6"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
-	. "$HOME/.config/bashbreak.conf"
+  . "$HOME/.config/bashbreak.conf"
 elif [ -e "/etc/bashbreak/bashbreak.conf" ]; then 
-	. "/etc/bashbreak/bashbreak.conf"
+  . "/etc/bashbreak/bashbreak.conf"
 else
-	. ./bashbreak.conf || exit 1
+  . ./bashbreak.conf || exit 1
 fi
 
 # define functions
@@ -15,13 +15,13 @@ function help() {
   echo "bashbreak v. ${version}"
   echo ""
   echo "Use:"
-  echo "	bashbreak [OPTION]..."
+  echo "  bashbreak [OPTION]..."
   echo "Options:"
-  echo "	-n		Specify number of work sessions"
-  echo "	-h		Print this help"
-  echo "	-B		Run session in background"
-  echo "	-s		Print status message"
-  echo "	-q		Quit a running session"
+  echo "  -n    Specify number of work sessions"
+  echo "  -h    Print this help"
+  echo "  -B    Run session in background"
+  echo "  -s    Print status message"
+  echo "  -q    Quit a running session"
 }
 
 function print_start_msg() {
@@ -69,10 +69,10 @@ function run_work_sprint() {
   j=0
   while [ $j -le $t_sleep ]; do 
     sec_remaining=$(( $t_sleep - $j ))
-	log_msg="$(pretty_time $sec_remaining) until $next_event."
-	write_mem "$log_msg" 
+    log_msg="$(pretty_time $sec_remaining) until $next_event."
+    write_mem "$log_msg" 
     sleep 1
-	let "j+=1"
+    let "j+=1"
   done
 }
 
@@ -83,10 +83,10 @@ function run_break() {
   j=0
   while [ $j -le $t_sleep ]; do 
     sec_remaining=$(( $t_sleep - $j ))
-	log_msg="$(pretty_time $sec_remaining) until $next_event."
-	write_mem "$log_msg" 
+    log_msg="$(pretty_time $sec_remaining) until $next_event."
+    write_mem "$log_msg" 
     sleep 1
-	let "j+=1"
+    let "j+=1"
   done
   check_idle
 }
@@ -105,25 +105,25 @@ function work_session() {
   # (short break + work sprint) loop
   if [ "$n_short_break" -ne 0 ]; then
     for i in $(seq 1 "$n_short_break"); do
-	  # this loop runs a short break (if any) and then a work sprint
-	  n=$(( $n_short_break - $i )) 
+      # this loop runs a short break (if any) and then a work sprint
+      n=$(( $n_short_break - $i )) 
       n_work_sprint="$(( $n_short_break - 1 ))" 
       sprint_frac="$i/$n_work_sprint"
-	  short_break_frac="$i/$n_short_break"
+      short_break_frac="$i/$n_short_break"
       msg="Take a $t_short_break min break. ($short_break_frac)"
       echo_v "$(date +'%H:%M') $msg"
       notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
 
-	  # start short break
-	  run_break "$t_short_break_s" 
+      # start short break
+      run_break "$t_short_break_s" 
 
-	  # determine next event type
+      # determine next event type
       short_breaks_remaining="$(( $n_short_break - $i ))"
-	  if [ $short_breaks_remaining -eq 0 ]; then
+      if [ $short_breaks_remaining -eq 0 ]; then
         next_event="long break"
       else
-		next_event="short break"
-	  fi
+      next_event="short break"
+      fi
 
       # start work sprint
       run_work_sprint "$t_work_s" "$next_event"
@@ -141,14 +141,14 @@ function check_idle() {
   # check if user idle
   if [ -x "$(command -v xprintidle)" ]; then
     t_idle=$(xprintidle) # user idle time in ms
-	if [ "$t_idle" -gt 5000 ]; then
+  if [ "$t_idle" -gt 5000 ]; then
       (( t_idle_=t_idle+1 ))
       while [ "$t_idle_" -ge "$t_idle" ]; do
-	    write_mem "User idle."
+        write_mem "User idle."
         sleep 1
         t_idle_=$(xprintidle)
       done
-	fi
+  fi
   else
     echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle." >&2
   fi
@@ -184,22 +184,22 @@ pcount=$(pgrep --count bashbreak)
 if [ "$pcount" -gt 1 ]; then
   # start cropped CLI loop
   while getopts ":hqs" OPT; do
-	case $OPT in
-	  h)
+    case $OPT in
+      h)
         help; exit;;
-	  s)
-		# print status
-		tmp_file="$(ls -1tr /dev/shm/bashbreak.* | tail -n 1)"
-		status_msg="$(cat "$tmp_file")"
-		echo "$status_msg"
-		notify-send "bashbreak" "$status_msg" --expire-time=5000
-		exit;;
-	  q)
-		kill_running;;
-	  \?)
-	    echo "Another bashbreak instance is already running, quit it before starting a new one (type: bashbreak -q)."
-		exit;;
-	esac
+      s)
+        # print status
+        tmp_file="$(ls -1tr /dev/shm/bashbreak.* | tail -n 1)"
+        status_msg="$(cat "$tmp_file")"
+        echo "$status_msg"
+        notify-send "bashbreak" "$status_msg" --expire-time=5000
+        exit;;
+      q)
+        kill_running;;
+      \?)
+        echo "Another bashbreak instance is already running, quit it before starting a new one (type: bashbreak -q)."
+        exit;;
+    esac
   done
   echo "Another bashbreak instance is already running, quit it before starting a new one (type: bashbreak -q)."
   exit
@@ -214,10 +214,10 @@ while getopts $optstring OPT; do
     n)
       n_session=${OPTARG};;
     B)
-	  # fork process to background
+      # fork process to background
       fork_to_bg=true;;
-	q)
-	  kill_running;;
+    q)
+      kill_running;;
     \?)
       # print if unknown option supplied
       echo "Invalid option: -${OPTARG}."
@@ -241,12 +241,12 @@ function main() {
   if [ "$n_session" -eq 0 ]; then
     # infinite number of sessions
     while true; do
-	  work_session 
+    work_session 
     done
   else
-	# finite number of sessions
+  # finite number of sessions
     for i in $(seq 1 "$n_session"); do
-	  work_session
+    work_session
     done
   fi
   clear_mem
