@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.6.5"
+version="0.6.6"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -47,7 +47,7 @@ function convert_time() {
 }
 
 function echo_v() {
-  # print message if verbose option set
+  # print message to stdout if verbose option set
   local msg="${*}"
   if [[ "${verbose}" == true ]]; then
     echo "${msg}" >&1
@@ -61,9 +61,10 @@ function pretty_time() {
   echo "$min min $sec s"
 }
 
-function sleep_and_log() {
-  # first argument is time in s
+function run_work_sprint() {
+  # runs work sprint
   t_sleep="$1"
+  # second argument is next break type
   next_event="$2"
   j=0
   while [ $j -le $t_sleep ]; do 
@@ -75,42 +76,65 @@ function sleep_and_log() {
   done
 }
 
+function run_break() {
+  # runs a long or short break and checks idle before continuing
+  t_sleep="$1"
+  next_event="work sprint"
+  j=0
+  while [ $j -le $t_sleep ]; do 
+    sec_remaining=$(( $t_sleep - $j ))
+	log_msg="$(pretty_time $sec_remaining) until $next_event."
+	write_mem "$log_msg" 
+    sleep 1
+	let "j+=1"
+  done
+  check_idle
+}
+
 function work_session() {
-  # run the (work sprint -> short break(s) -> long break) loop 
-  # $1 sets number of short breaks
-  if [ "$1" -ne 0 ]; then
-    for i in $(seq 1 "$1"); do
-      next_event="short break"
-      n=$(( $1 - $i )) 
-      n_work_sprint="$(( $1 - 1 ))" 
+  # one work session is: work sprint -> (short break + work sprint) -> long break 
+  if [ "$n_short_break" -ne 0 ]; then
+    next_event="short break"
+  else
+    next_event="long break"
+  fi 
+
+  # start work sprint
+  run_work_sprint "$t_work_s" "$next_event"
+
+  # (short break + work sprint) loop
+  if [ "$n_short_break" -ne 0 ]; then
+    for i in $(seq 1 "$n_short_break"); do
+	  # this loop runs a short break (if any) and then a work sprint
+	  n=$(( $n_short_break - $i )) 
+      n_work_sprint="$(( $n_short_break - 1 ))" 
       sprint_frac="$i/$n_work_sprint"
-
-      # start work sprint
-      sleep_and_log "$t_work_s" "$next_event"
-
-      # start short break
-      short_break_frac="$i/$1"
+	  short_break_frac="$i/$n_short_break"
       msg="Take a $t_short_break min break. ($short_break_frac)"
       echo_v "$(date +'%H:%M') $msg"
       notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
-      next_event="work sprint"
-      sleep_and_log "$t_short_break_s" "$next_event"
-      check_idle
+
+	  # start short break
+	  run_break "$t_short_break_s" 
+
+	  # determine next event type
+      short_breaks_remaining="$(( $n_short_break - $i ))"
+	  if [ $short_breaks_remaining -eq 0 ]; then
+        next_event="long break"
+      else
+		next_event="short break"
+	  fi
+
+      # start work sprint
+      run_work_sprint "$t_work_s" "$next_event"
     done
-  else
-	# if only a long break is desired
-    next_event="long break"
-	# start work sprint
-	sleep_and_log "$t_work_s" "$next_event"
-    check_idle
   fi
-  # begin long break 
-  next_event="long break"
+
+  # start long break
   msg="Take a $t_long_break min break."
   echo_v "$(date +'%H:%M') $msg"
   notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
-  sleep_and_log "$t_long_break_s" "work sprint"
-  check_idle
+  run_break "$t_long_break_s" 
 }
 
 function check_idle() {
@@ -168,7 +192,7 @@ if [ "$pcount" -gt 1 ]; then
 		tmp_file="$(ls -1tr /dev/shm/bashbreak.* | tail -n 1)"
 		status_msg="$(cat "$tmp_file")"
 		echo "$status_msg"
-		notify-send "bashbreak" "$status_msg"
+		notify-send "bashbreak" "$status_msg" --expire-time=5000
 		exit;;
 	  q)
 		kill_running;;
@@ -217,12 +241,12 @@ function main() {
   if [ "$n_session" -eq 0 ]; then
     # infinite number of sessions
     while true; do
-	  work_session "$n_short_break"
+	  work_session 
     done
   else
 	# finite number of sessions
     for i in $(seq 1 "$n_session"); do
-	  work_session "$n_short_break"
+	  work_session
     done
   fi
   clear_mem
