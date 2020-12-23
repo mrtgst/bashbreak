@@ -15,13 +15,13 @@ function help() {
   echo "bashbreak v. ${version}"
   echo ""
   echo "Use:"
-  echo "  bashbreak [OPTION]..."
+  echo "    bashbreak [OPTION]..."
   echo "Options:"
-  echo "  -n    Specify number of work sessions"
-  echo "  -h    Print this help"
-  echo "  -B    Run session in background"
-  echo "  -s    Print status message"
-  echo "  -q    Quit a running session"
+  echo "    -n      Specify number of work sessions"
+  echo "    -h      Print this help"
+  echo "    -B      Run session in background"
+  echo "    -s      Print status message"
+  echo "    -q      Quit a running session"
 }
 
 function print_start_msg() {
@@ -153,7 +153,9 @@ function check_idle() {
     echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle." >&2
   fi
   echo_v "$(date +'%H:%M') Starting next work sprint."
-  notify-send "bashbreak" "Starting next work sprint."
+  if [[ $show_work_sprint_start == true ]]; then
+    notify-send "bashbreak" "Starting next work sprint."
+  fi
 }
 
 function create_mem() {
