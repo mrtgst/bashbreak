@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.6.6"
+version="0.7.0"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -17,11 +17,12 @@ function help() {
   echo "Use:"
   echo "    bashbreak [OPTION]..."
   echo "Options:"
-  echo "    -n      Specify number of work sessions"
+  echo "    -c      Edit config file"
   echo "    -h      Print this help"
-  echo "    -B      Run session in background"
-  echo "    -s      Print status message"
+  echo "    -n      Specify number of work sessions"
   echo "    -q      Quit a running session"
+  echo "    -s      Print status message"
+  echo "    -B      Run session in background"
 }
 
 function print_start_msg() {
@@ -181,11 +182,30 @@ function kill_running() {
   pkill -9 "bashbreak"
 }
 
+function edit_config() {
+  # edit config file with text editor
+  # create user config from default if it does not exist
+  CONF_DIR="$HOME"/.config
+  CONF_FILE=bashbreak.conf
+  if ! [ -e "$CONF_DIR/$CONF_FILE" ]; then
+    create_config "$CONF_FILE" "$CONF_DIR"
+  fi
+  "$EDITOR" "$CONF_DIR/$CONF_FILE"
+}
+
+function create_config() {
+  echo "Copying default config file to $2/$1 ..." 
+  if ! [ -d "$2" ]; then
+    mkdir "$2" || exit 1 
+  fi
+  cp ./"$1" "$2" || exit 1 
+}
+
 # exit if instance already running
 pcount=$(pgrep --count bashbreak)
 if [ "$pcount" -gt 1 ]; then
   # start cropped CLI loop
-  while getopts ":hqs" OPT; do
+  while getopts ":chqs" OPT; do
     case $OPT in
       h)
         help; exit;;
@@ -196,6 +216,9 @@ if [ "$pcount" -gt 1 ]; then
         echo "$status_msg"
         notify-send "bashbreak" "$status_msg" --expire-time=5000
         exit;;
+	  c)
+        edit_config
+		exit;;
       q)
         kill_running;;
       \?)
@@ -208,7 +231,7 @@ if [ "$pcount" -gt 1 ]; then
 fi
 
 # main CLI loop
-optstring=":hn:b:Bq"
+optstring=":hcn:b:Bq"
 while getopts $optstring OPT; do
   case $OPT in
     h)
@@ -218,6 +241,9 @@ while getopts $optstring OPT; do
     B)
       # fork process to background
       fork_to_bg=true;;
+	c)
+	  edit_config
+	  exit;;
     q)
       kill_running;;
     \?)
