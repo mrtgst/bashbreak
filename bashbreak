@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.7.0"
+version="0.7.1"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -185,20 +185,21 @@ function kill_running() {
 function edit_config() {
   # edit config file with text editor
   # create user config from default if it does not exist
-  CONF_DIR="$HOME"/.config
+  CONF_DIR=/etc/bashbreak
+  USER_CONF_DIR="$HOME"/.config
   CONF_FILE=bashbreak.conf
-  if ! [ -e "$CONF_DIR/$CONF_FILE" ]; then
-    create_config "$CONF_FILE" "$CONF_DIR"
+  if ! [ -e "$USER_CONF_DIR/$CONF_FILE" ]; then
+    create_config "$CONF_DIR" "$CONF_FILE" "$USER_CONF_DIR"
   fi
-  "$EDITOR" "$CONF_DIR/$CONF_FILE"
+  "$EDITOR" "$USER_CONF_DIR/$CONF_FILE" 2> /dev/null || echo 'No $EDITOR env variable found, please set it by e.g. adding "export EDITOR=vim" in the config file of your shell.'
 }
 
 function create_config() {
-  echo "Copying default config file to $2/$1 ..." 
-  if ! [ -d "$2" ]; then
-    mkdir "$2" || exit 1 
+  echo "Copying default config file $1/$2 to $3/$2 ..." 
+  if ! [ -d "$3" ]; then
+    mkdir "$3" || exit 1 
   fi
-  cp ./"$1" "$2" || exit 1 
+  cp "$1"/"$2" "$3" || exit 1 
 }
 
 # exit if instance already running
