@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.7.1"
+version="0.7.2"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -21,7 +21,8 @@ function help() {
   echo "    -h      Print this help"
   echo "    -n      Specify number of work sessions"
   echo "    -q      Quit a running session"
-  echo "    -s      Print status message"
+  echo "    -s      Print status message to stdout"
+  echo "    -S      Print status message as notification"
   echo "    -B      Run session in background"
 }
 
@@ -174,12 +175,18 @@ function clear_mem() {
   rm -f /dev/shm/bashbreak.*
 }
 
+function get_status() {
+  # get status from mem file
+  tmp_file="$(ls -1tr /dev/shm/bashbreak.* | tail -n 1)"
+  status_msg="$(cat "$tmp_file")"
+}
+
 function kill_running() {
   # clear memory and kill running instance
   notify-send "bashbreak" "Terminated."
-  echo_v "`date +"%H:%M"` Terminated."
+  echo_v "Terminated."
   clear_mem
-  pkill -9 "bashbreak"
+  pkill -9 "bashbreak" 
 }
 
 function edit_config() {
@@ -206,15 +213,17 @@ function create_config() {
 pcount=$(pgrep --count bashbreak)
 if [ "$pcount" -gt 1 ]; then
   # start cropped CLI loop
-  while getopts ":chqs" OPT; do
+  while getopts ":chqsS" OPT; do
     case $OPT in
       h)
         help; exit;;
-      s)
-        # print status
-        tmp_file="$(ls -1tr /dev/shm/bashbreak.* | tail -n 1)"
-        status_msg="$(cat "$tmp_file")"
+      s) # print status to stdout
+		get_status
         echo "$status_msg"
+		exit;;
+	  S)
+		# print status as notification
+		get_status
         notify-send "bashbreak" "$status_msg" --expire-time=5000
         exit;;
 	  c)
