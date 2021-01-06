@@ -17,13 +17,13 @@ function help() {
   echo "Use:"
   echo "    bashbreak [OPTION]..."
   echo "Options:"
+  echo "    -B      Run session in background"
   echo "    -c      Edit config file"
   echo "    -h      Print this help"
   echo "    -n      Specify number of work sessions"
   echo "    -q      Quit a running session"
   echo "    -s      Print status message to stdout"
   echo "    -S      Print status message as notification"
-  echo "    -B      Run session in background"
 }
 
 function print_start_msg() {
