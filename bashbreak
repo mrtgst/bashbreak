@@ -60,7 +60,11 @@ function pretty_time() {
   # takes a time in s and displays it in min and s
   min=$(( $1 / 60 ))
   sec=$(( $1 % 60 ))
-  echo "$min min $sec s"
+  if [ "$1" -gt 60 ]; then
+    echo "$min min"
+  else
+    echo "$sec sec"
+  fi
 }
 
 function run_work_sprint() {
