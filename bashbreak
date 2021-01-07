@@ -149,7 +149,7 @@ function check_idle() {
   # check if user idle
   if [ -x "$(command -v xprintidle)" ]; then
     t_idle=$(xprintidle) # user idle time in ms
-  if [ "$t_idle" -gt 5000 ]; then
+  if [ "$t_idle" -gt 10000 ]; then
       (( t_idle_=t_idle+1 ))
       while [ "$t_idle_" -ge "$t_idle" ]; do
         write_mem "User idle"
