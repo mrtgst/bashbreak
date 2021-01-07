@@ -52,7 +52,7 @@ function convert_time() {
 function echo_v() {
 	# print message to stdout if verbose option set
 	local msg="${*}"
-	if [[ "${verbose}" == true ]]; then
+	if [ "${verbose}" == true ]; then
 		echo "${msg}" >&1
 	fi
 }
@@ -110,7 +110,7 @@ function run_break() {
 
 function work_sprint_start_msg() {
 	echo_v "$(date +'%H:%M') Starting next work sprint ($1/$2)"
-	if [[ $show_work_sprint_start == true ]]; then
+	if [ $show_work_sprint_start == true ]; then
 		notify-send "bashbreak" "Starting next work sprint ($1/$2)" --expire-time=5000
 	fi
 }
@@ -167,11 +167,13 @@ function run_session() {
 }
 
 function check_idle() {
-	if [ check_idle_on == true ]; then
+	if [ "$idle_checker_on" == true ]; then
 		# check if user idle
-
+		echo 'checking idle'
 		if [ -x "$(command -v xprintidle)" ]; then
+
 			t_idle=$(xprintidle) # user idle time in ms
+
 			if [ "$t_idle" -gt "$(( $idle_buffer * 1000 ))" ]; then
 				(( t_idle_=t_idle+1 ))
 				while [ "$t_idle_" -ge "$t_idle" ]; do
@@ -180,6 +182,7 @@ function check_idle() {
 					t_idle_=$(xprintidle)
 				done
 			fi
+
 		else
 			echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle" >&2
 		fi
