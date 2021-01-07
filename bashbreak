@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.5"
+version="0.8.6"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -110,7 +110,7 @@ function run_break() {
 
 function work_sprint_start_msg() {
 	echo_v "$(date +'%H:%M') Starting next work sprint ($1/$2)"
-	if [ $show_work_sprint_start == true ]; then
+	if [ "$show_work_sprint_start" == true ]; then
 		notify-send "bashbreak" "Starting next work sprint ($1/$2)" --expire-time=5000
 	fi
 }
