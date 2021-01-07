@@ -1,323 +1,343 @@
 #!/bin/bash
-version="0.8.0"
+version="0.8.1"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
-  . "$HOME/.config/bashbreak.conf"
+	. "$HOME/.config/bashbreak.conf"
 elif [ -e "/etc/bashbreak/bashbreak.conf" ]; then 
-  . "/etc/bashbreak/bashbreak.conf"
+	. "/etc/bashbreak/bashbreak.conf"
 else
-  . ./bashbreak.conf || exit 1
+	. ./bashbreak.conf || exit 1
 fi
 
 # define functions
 function help() {
-  echo "bashbreak v. ${version}"
-  echo ""
-  echo "Use:"
-  echo "    bashbreak [OPTION]..."
-  echo "Options:"
-  echo "    -B      Run session in background"
-  echo "    -c      Edit config file"
-  echo "    -h      Print this help"
-  echo "    -n      Specify number of work sessions"
-  echo "    -q      Quit a running session"
-  echo "    -s      Print status message to stdout"
-  echo "    -S      Print status message as notification"
+	echo "bashbreak v. ${version}"
+	echo ""
+	echo "Use:"
+	echo "		bashbreak [OPTION]..."
+	echo "Options:"
+	echo "		-B			Run session in background"
+	echo "		-c			Edit config file"
+	echo "		-h			Print this help"
+	echo "		-n			Specify number of work sessions"
+	echo "		-q			Quit a running session"
+	echo "		-s			Print status message to stdout"
+	echo "		-S			Print status message as notification"
 }
 
 function print_start_msg() {
-  # adapt start msg to number of sessions
-  if [ "$n_session" -eq 0 ]; then
-    start_msg="Starting work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
-  elif [ "$n_session" -eq 1 ]; then
-    start_msg="Starting work session with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
-  else
-    start_msg="Starting $n_session work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
-  fi
-  echo_v "$(date +'%H:%M') $start_msg"
-  notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=int:transient:1
+	# adapt start msg to number of sessions
+	if [ "$n_session" -eq 0 ]; then
+		start_msg="Starting work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
+	elif [ "$n_session" -eq 1 ]; then
+		start_msg="Starting work session with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
+	else
+		start_msg="Starting $n_session work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
+	fi
+	echo_v "$(date +'%H:%M') $start_msg"
+	notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=int:transient:1
 }
 
 function convert_time() {
-  # convert time to ms or min
-  (( t_work_s=t_work*60 ))
-  (( t_short_break_s=t_short_break*60 ))
-  (( t_short_break_ms=t_short_break_s*1000 ))
-  (( t_long_break_s=t_long_break*60 ))
-  (( t_long_break_ms=t_long_break_s*1000 ))
+	# convert time to ms or min
+	(( t_work_s=t_work*60 ))
+	(( t_short_break_s=t_short_break*60 ))
+	(( t_short_break_ms=t_short_break_s*1000 ))
+	(( t_long_break_s=t_long_break*60 ))
+	(( t_long_break_ms=t_long_break_s*1000 ))
 }
 
 function echo_v() {
-  # print message to stdout if verbose option set
-  local msg="${*}"
-  if [[ "${verbose}" == true ]]; then
-    echo "${msg}" >&1
-  fi
+	# print message to stdout if verbose option set
+	local msg="${*}"
+	if [[ "${verbose}" == true ]]; then
+		echo "${msg}" >&1
+	fi
 }
 
 function pretty_time() {
-  # takes a time in s and displays it in min and s
-  min=$(( $1 / 60 ))
-  sec=$(( $1 % 60 ))
-  if [ "$1" -ge 60 ]; then
-    echo "$min min"
-  else
-    echo "$sec sec"
-  fi
+	# takes a time in s and displays it in min and s
+	min=$(( $1 / 60 ))
+	sec=$(( $1 % 60 ))
+	if [ "$1" -ge 60 ]; then
+		echo "$min min"
+	else
+		echo "$sec sec"
+	fi
 }
 
 function run_work_sprint() {
-  # runs work sprint
-  t_sleep="$1"
-  # second argument is next break type
-  next_event="$2"
-  break_count="$3"
-  j=0
-  while [ $j -le $t_sleep ]; do 
-    sec_remaining=$(( $t_sleep - $j ))
-	if [ "$next_event" = "long break" ]; then
-	  log_msg="$(pretty_time $sec_remaining) until $next_event"
-	else
-	  log_msg="$(pretty_time $sec_remaining) until $next_event ($break_count/$n_short_break)"
-	fi
-	write_mem "$log_msg" 
-    sleep 1
-    let "j+=1"
-  done
+	# runs work sprint
+	t_sleep="$1"
+	# second argument is next break type
+	next_event="$2"
+	break_count="$3"
+	j=0
+	while [ $j -le $t_sleep ]; do 
+		sec_remaining=$(( $t_sleep - $j ))
+
+		if [ "$next_event" = "long break" ]; then
+			log_msg="$(pretty_time $sec_remaining) until $next_event"
+		else
+			log_msg="$(pretty_time $sec_remaining) until $next_event ($break_count/$n_short_break)"
+		fi
+
+		write_mem "$log_msg" 
+		sleep 1
+		let "j+=1"
+	done
 }
 
 function run_break() {
-  # runs a long or short break and checks idle before continuing
-  t_sleep="$1"
-  sprint_count="$2"
-  n_work_sprint="$(( $n_short_break + 1 ))"
-  next_event="work sprint"
-  j=0
-  while [ $j -le $t_sleep ]; do 
-    sec_remaining=$(( $t_sleep - $j ))
-	log_msg="$(pretty_time $sec_remaining) until $next_event ($sprint_count/$n_work_sprint)"
-    write_mem "$log_msg" 
-    sleep 1
-    let "j+=1"
-  done
-  check_idle
-  work_sprint_start_msg "$sprint_count" "$n_work_sprint"
+	# runs a long or short break and checks idle before continuing
+	t_sleep="$1"
+	sprint_count="$2"
+	n_work_sprint="$(( $n_short_break + 1 ))"
+	next_event="work sprint"
+	j=0
+	while [ $j -le $t_sleep ]; do 
+		sec_remaining=$(( $t_sleep - $j ))
+		log_msg="$(pretty_time $sec_remaining) until $next_event ($sprint_count/$n_work_sprint)"
+		write_mem "$log_msg" 
+		sleep 1
+		let "j+=1"
+	done
+	check_idle
+	work_sprint_start_msg "$sprint_count" "$n_work_sprint"
 }
 
 function work_sprint_start_msg() {
-  echo_v "$(date +'%H:%M') Starting next work sprint ($1/$2)"
-  if [[ $show_work_sprint_start == true ]]; then
-    notify-send "bashbreak" "Starting next work sprint ($1/$2)" --expire-time=5000
-  fi
+	echo_v "$(date +'%H:%M') Starting next work sprint ($1/$2)"
+	if [[ $show_work_sprint_start == true ]]; then
+		notify-send "bashbreak" "Starting next work sprint ($1/$2)" --expire-time=5000
+	fi
 }
 
 function run_session() {
-  # one work session is: work sprint -> (short break + work sprint) -> long break 
-  if [ "$n_short_break" -ne 0 ]; then
-    next_event="short break"
-  else
-    next_event="long break"
-  fi 
+	# one work session is: work sprint -> (short break + work sprint) -> long break 
+	if [ "$n_short_break" -ne 0 ]; then
+		next_event="short break"
+	else
+		next_event="long break"
+	fi 
 
-  # start first work sprint
-  run_work_sprint "$t_work_s" "$next_event" 1
+	# start first work sprint
+	run_work_sprint "$t_work_s" "$next_event" 1
 
-  # (short break + work sprint) loop
-  if [ "$n_short_break" -ne 0 ]; then
-    for i in $(seq 1 "$n_short_break"); do
-      # this loop runs a short break (if any) and then a work sprint
-      n=$(( $n_short_break - $i )) 
-      n_work_sprint="$(( $n_short_break - 1 ))" 
-      sprint_frac="$i/$n_work_sprint"
-      short_break_frac="$i/$n_short_break"
-      msg="Take a $t_short_break min break ($short_break_frac)"
-      echo_v "$(date +'%H:%M') $msg"
-      notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
+	# (short break + work sprint) loop
+	if [ "$n_short_break" -ne 0 ]; then
+		for i in $(seq 1 "$n_short_break"); do
+			# this loop runs a short break (if any) and then a work sprint
 
-      # start short break
-      sprint_count="$(( $i + 1 ))"
-      run_break "$t_short_break_s" "$sprint_count" 
+			n=$(( $n_short_break - $i )) 
+			n_work_sprint="$(( $n_short_break - 1 ))" 
+			sprint_frac="$i/$n_work_sprint"
+			short_break_frac="$i/$n_short_break"
+			msg="Take a $t_short_break min break ($short_break_frac)"
+			echo_v "$(date +'%H:%M') $msg"
+			notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
 
-      # determine next event type
-      short_breaks_remaining="$(( $n_short_break - $i ))"
-      if [ $short_breaks_remaining -eq 0 ]; then
-        next_event="long break"
-      else
-        next_event="short break"
-      fi
+			# start short break
+			sprint_count="$(( $i + 1 ))"
+			run_break "$t_short_break_s" "$sprint_count" 
 
-      break_count="$(( $i + 1 ))"
+			# determine next event type
+			short_breaks_remaining="$(( $n_short_break - $i ))"
+			if [ $short_breaks_remaining -eq 0 ]; then
+				next_event="long break"
+			else
+				next_event="short break"
+			fi
 
-      # start work sprint
-	  run_work_sprint "$t_work_s" "$next_event" "$break_count"
-    done
-  fi
+			break_count="$(( $i + 1 ))"
 
-  # start long break
-  msg="Take a $t_long_break min break"
-  echo_v "$(date +'%H:%M') $msg"
-  notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
-  run_break "$t_long_break_s" 1 
+			# start work sprint
+			run_work_sprint "$t_work_s" "$next_event" "$break_count"
+
+		done
+	fi
+
+	# start long break
+	msg="Take a $t_long_break min break"
+	echo_v "$(date +'%H:%M') $msg"
+	notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
+	run_break "$t_long_break_s" 1 
 }
 
 function check_idle() {
-  if [ check_idle_on = true ]; then
-    # check if user idle
-    if [ -x "$(command -v xprintidle)" ]; then
-      t_idle=$(xprintidle) # user idle time in ms
-	  if [ "$t_idle" -gt "$(( $idle_buffer * 1000 ))" ]; then
-        (( t_idle_=t_idle+1 ))
-        while [ "$t_idle_" -ge "$t_idle" ]; do
-          write_mem "User idle"
-          sleep 1
-          t_idle_=$(xprintidle)
-        done
-    fi
-    else
-      echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle" >&2
-    fi
-  fi
+	if [ check_idle_on = true ]; then
+		# check if user idle
+
+		if [ -x "$(command -v xprintidle)" ]; then
+			t_idle=$(xprintidle) # user idle time in ms
+			if [ "$t_idle" -gt "$(( $idle_buffer * 1000 ))" ]; then
+				(( t_idle_=t_idle+1 ))
+				while [ "$t_idle_" -ge "$t_idle" ]; do
+					write_mem "User idle"
+					sleep 1
+					t_idle_=$(xprintidle)
+				done
+			fi
+		else
+			echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle" >&2
+		fi
+
+	fi
 }
 
 function create_mem() {
-  # create temp file in memory
-  mem="$(mktemp /dev/shm/bashbreak.XXX)" 
+	# create temp file in memory
+	mem="$(mktemp /dev/shm/bashbreak.XXX)" 
 }
 
 function write_mem() {
-  # write status to mem file
-  echo "$@" > "$mem"
+	# write status to mem file
+	echo "$@" > "$mem"
 }
 
 function clear_mem() {
-  # clear temp mem file
-  rm -f /dev/shm/bashbreak.*
+	# clear temp mem file
+	rm -f /dev/shm/bashbreak.*
 }
 
 function get_status() {
-  # get status from mem file
-  tmp_file="$(ls -1tr /dev/shm/bashbreak.* | tail -n 1)"
-  status_msg="$(cat "$tmp_file")"
+	# get status from mem file
+	tmp_file="$(ls -1tr /dev/shm/bashbreak.* | tail -n 1)"
+	status_msg="$(cat "$tmp_file")"
 }
 
 function kill_running() {
-  # clear memory and kill running instance
-  notify-send "bashbreak" "Terminated"
-  echo_v "Terminated"
-  clear_mem
-  pkill -9 "bashbreak" 
+	# clear memory and kill running instance
+	notify-send "bashbreak" "Terminated"
+	echo_v "Terminated"
+	clear_mem
+	pkill -9 "bashbreak" 
 }
 
 function edit_config() {
-  # edit config file with text editor
-  # create user config from default if it does not exist
-  CONF_DIR=/etc/bashbreak
-  USER_CONF_DIR="$HOME"/.config
-  CONF_FILE=bashbreak.conf
-  if ! [ -e "$USER_CONF_DIR/$CONF_FILE" ]; then
-    create_config "$CONF_DIR" "$CONF_FILE" "$USER_CONF_DIR"
-  fi
-  "$EDITOR" "$USER_CONF_DIR/$CONF_FILE" 2> /dev/null || echo 'No $EDITOR env variable found, please set it by e.g. adding "export EDITOR=vim" in the config file of your shell.'
+	# edit config file with text editor
+	# create user config from default if it does not exist
+	CONF_DIR=/etc/bashbreak
+	USER_CONF_DIR="$HOME"/.config
+	CONF_FILE=bashbreak.conf
+	if ! [ -e "$USER_CONF_DIR/$CONF_FILE" ]; then
+		create_config "$CONF_DIR" "$CONF_FILE" "$USER_CONF_DIR"
+	fi
+	"$EDITOR" "$USER_CONF_DIR/$CONF_FILE" 2> /dev/null || echo 'No $EDITOR env variable found, please set it by e.g. adding "export EDITOR=vim" in the config file of your shell.'
 }
 
 function create_config() {
-  echo "Copying default config file $1/$2 to $3/$2 ..." 
-  if ! [ -d "$3" ]; then
-    mkdir "$3" || exit 1 
-  fi
-  cp "$1"/"$2" "$3" || exit 1 
+	echo "Copying default config file $1/$2 to $3/$2 ..." 
+	if ! [ -d "$3" ]; then
+		mkdir "$3" || exit 1 
+	fi
+	cp "$1"/"$2" "$3" || exit 1 
 }
 
-# exit if instance already running
+# main program
+function main() {
+	# make trap to notify and clear mem on kill signal
+	trap 'notify-send "bashbreak" "Terminated"; echo_v "`date +"%H:%M"` Terminated"; clear_mem; exit' SIGINT SIGTERM
+	convert_time
+	print_start_msg
+	# main loop
+	create_mem
+	if [ "$n_session" -eq 0 ]; then
+		# infinite number of sessions
+		while true; do
+		run_session 
+		done
+	else
+		# finite number of sessions
+		for i in $(seq 1 "$n_session"); do
+		run_session
+		done
+	fi
+	clear_mem
+}
+
+# before starting any CLI loop, exit if instance already running
 pcount=$(pgrep --count bashbreak)
+				
 if [ "$pcount" -gt 1 ]; then
-  # start cropped CLI loop
-  while getopts ":chqsS" OPT; do
-    case $OPT in
-      h)
-        help; exit;;
-      s) # print status to stdout
-		get_status
-        echo "$status_msg"
-		exit;;
-	  S)
-		# print status as notification
-		get_status
-        notify-send "bashbreak" "$status_msg" --expire-time=5000
-        exit;;
-	  c)
-        edit_config
-		exit;;
-      q)
-        kill_running;;
-      \?)
-        echo "Another bashbreak instance is already running, quit it before starting a new one (type: bashbreak -q)"
-        exit;;
-    esac
-  done
-  echo "Another bashbreak instance is already running, quit it before starting a new one (type: bashbreak -q)"
-  exit
+	# start cropped CLI loop
+	while getopts ":chqsS" OPT; do
+		case $OPT in
+			h)
+				help; exit;;
+
+			s) # print status to stdout
+				get_status
+				echo "$status_msg"
+				exit;;
+
+			S) # print status as notification
+				get_status
+				notify-send "bashbreak" "$status_msg" --expire-time=5000
+				exit;;
+
+			c)
+				edit_config
+				exit;;
+
+			q)
+				kill_running;;
+
+			\?)
+				echo "Another bashbreak instance is already running, quit it before starting a new one (type: bashbreak -q)"
+				exit;;
+
+		esac
+	done
+
+	echo "Another bashbreak instance is already running, quit it before starting a new one (type: bashbreak -q)"
+	exit
+
 fi
 
 # main CLI loop
 optstring=":hcn:b:Bq"
 while getopts $optstring OPT; do
-  case $OPT in
-    h)
-      help; exit;;
-    n)
-      n_session=${OPTARG};;
-    B)
-      # fork process to background
-      fork_to_bg=true;;
-	c)
-	  edit_config
-	  exit;;
-    q)
-      kill_running;;
-    \?)
-      # print if unknown option supplied
-      echo "Invalid option: -${OPTARG}"
-      echo "Use -h to see available options"
-      exit;;
-    :)
-      # print if no option arguments supplied
-      echo "Option -${OPTARG} requires an argument"
-      exit;;
-  esac
-done
+	case $OPT in
+		h)
+			help; exit;;
 
-# main program
-function main() {
-  # make trap to notify and clear mem on kill signal
-  trap 'notify-send "bashbreak" "Terminated"; echo_v "`date +"%H:%M"` Terminated"; clear_mem; exit' SIGINT SIGTERM
-  convert_time
-  print_start_msg
-  # main loop
-  create_mem
-  if [ "$n_session" -eq 0 ]; then
-    # infinite number of sessions
-    while true; do
-    run_session 
-    done
-  else
-  # finite number of sessions
-    for i in $(seq 1 "$n_session"); do
-    run_session
-    done
-  fi
-  clear_mem
-}
+		n)
+			n_session=${OPTARG};;
+
+		B) # fork process to background
+			fork_to_bg=true;;
+
+		c)
+			edit_config
+			exit;;
+
+		q)
+			kill_running;;
+
+		\?)
+			# print if unknown option supplied
+			echo "Invalid option: -${OPTARG}"
+			echo "Use -h to see available options"
+			exit;;
+
+		:)
+			# print if no option arguments supplied
+			echo "Option -${OPTARG} requires an argument"
+			exit;;
+
+	esac
+done
 
 # check whether to run main in background or foreground
 if [ "$fork_to_bg" == true ]; then
-  {
-    trap "" HUP
-    main
-  } < /dev/null > /dev/null 2>&1 &
+	{
+		trap "" HUP
+		main
+	} < /dev/null > /dev/null 2>&1 &
 else
-  main
+	main
 fi
 
 exit
