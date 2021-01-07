@@ -72,10 +72,11 @@ function run_work_sprint() {
   t_sleep="$1"
   # second argument is next break type
   next_event="$2"
+  sprint_count="$3"
   j=0
   while [ $j -le $t_sleep ]; do 
     sec_remaining=$(( $t_sleep - $j ))
-    log_msg="$(pretty_time $sec_remaining) until $next_event"
+	log_msg="$(pretty_time $sec_remaining) until $next_event ($sprint_count/$n_short_break)"
     write_mem "$log_msg" 
     sleep 1
     let "j+=1"
@@ -106,7 +107,7 @@ function work_session() {
   fi 
 
   # start work sprint
-  run_work_sprint "$t_work_s" "$next_event"
+  run_work_sprint "$t_work_s" "$next_event" '1'
 
   # (short break + work sprint) loop
   if [ "$n_short_break" -ne 0 ]; then
@@ -132,7 +133,7 @@ function work_session() {
       fi
 
       # start work sprint
-      run_work_sprint "$t_work_s" "$next_event"
+      run_work_sprint "$t_work_s" "$next_event" "$i/$n_short_break"
     done
   fi
 
