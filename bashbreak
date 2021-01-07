@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.3"
+version="0.8.4"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -167,7 +167,7 @@ function run_session() {
 }
 
 function check_idle() {
-	if [ check_idle_on = true ]; then
+	if [ check_idle_on == true ]; then
 		# check if user idle
 
 		if [ -x "$(command -v xprintidle)" ]; then
