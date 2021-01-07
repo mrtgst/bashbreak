@@ -168,8 +168,8 @@ function run_session() {
 
 function check_idle() {
 	if [ "$idle_checker_on" == true ]; then
+
 		# check if user idle
-		echo 'checking idle'
 		if [ -x "$(command -v xprintidle)" ]; then
 
 			t_idle=$(xprintidle) # user idle time in ms
