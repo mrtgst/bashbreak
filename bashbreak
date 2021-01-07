@@ -86,11 +86,12 @@ function run_work_sprint() {
 function run_break() {
   # runs a long or short break and checks idle before continuing
   t_sleep="$1"
+  sprint_count="$(( $2 + 1 ))"
   next_event="work sprint"
   j=0
   while [ $j -le $t_sleep ]; do 
     sec_remaining=$(( $t_sleep - $j ))
-    log_msg="$(pretty_time $sec_remaining) until $next_event"
+	log_msg="$(pretty_time $sec_remaining) until $next_event ($sprint_count/$n_short_break)"
     write_mem "$log_msg" 
     sleep 1
     let "j+=1"
@@ -107,7 +108,7 @@ function work_session() {
   fi 
 
   # start work sprint
-  run_work_sprint "$t_work_s" "$next_event" '1'
+  run_work_sprint "$t_work_s" "$next_event" 1
 
   # (short break + work sprint) loop
   if [ "$n_short_break" -ne 0 ]; then
@@ -117,12 +118,12 @@ function work_session() {
       n_work_sprint="$(( $n_short_break - 1 ))" 
       sprint_frac="$i/$n_work_sprint"
       short_break_frac="$i/$n_short_break"
-      msg="Take a $t_short_break min break. ($short_break_frac)"
+      msg="Take a $t_short_break min break ($short_break_frac)"
       echo_v "$(date +'%H:%M') $msg"
       notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
 
       # start short break
-      run_break "$t_short_break_s" 
+      run_break "$t_short_break_s" "$i" 
 
       # determine next event type
       short_breaks_remaining="$(( $n_short_break - $i ))"
@@ -133,7 +134,7 @@ function work_session() {
       fi
 
       # start work sprint
-      run_work_sprint "$t_work_s" "$next_event" "$i"
+	  run_work_sprint "$t_work_s" "$next_event" "$(( $i + 1 ))"
     done
   fi
 
@@ -141,7 +142,7 @@ function work_session() {
   msg="Take a $t_long_break min break"
   echo_v "$(date +'%H:%M') $msg"
   notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
-  run_break "$t_long_break_s" 
+  run_break "$t_long_break_s" 1 
 }
 
 function check_idle() {
