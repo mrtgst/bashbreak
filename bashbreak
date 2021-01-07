@@ -133,7 +133,7 @@ function work_session() {
       fi
 
       # start work sprint
-      run_work_sprint "$t_work_s" "$next_event" "$i/$n_short_break"
+      run_work_sprint "$t_work_s" "$next_event" "$i"
     done
   fi
 
