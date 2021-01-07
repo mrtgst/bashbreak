@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.7.3"
+version="0.8.0"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -60,7 +60,7 @@ function pretty_time() {
   # takes a time in s and displays it in min and s
   min=$(( $1 / 60 ))
   sec=$(( $1 % 60 ))
-  if [ "$1" -gt 60 ]; then
+  if [ "$1" -ge 60 ]; then
     echo "$min min"
   else
     echo "$sec sec"
@@ -72,12 +72,16 @@ function run_work_sprint() {
   t_sleep="$1"
   # second argument is next break type
   next_event="$2"
-  sprint_count="$3"
+  break_count="$3"
   j=0
   while [ $j -le $t_sleep ]; do 
     sec_remaining=$(( $t_sleep - $j ))
-	log_msg="$(pretty_time $sec_remaining) until $next_event ($sprint_count/$n_short_break)"
-    write_mem "$log_msg" 
+	if [ "$next_event" = "long break" ]; then
+	  log_msg="$(pretty_time $sec_remaining) until $next_event"
+	else
+	  log_msg="$(pretty_time $sec_remaining) until $next_event ($break_count/$n_short_break)"
+	fi
+	write_mem "$log_msg" 
     sleep 1
     let "j+=1"
   done
@@ -86,17 +90,26 @@ function run_work_sprint() {
 function run_break() {
   # runs a long or short break and checks idle before continuing
   t_sleep="$1"
-  sprint_count="$(( $2 + 1 ))"
+  sprint_count="$2"
+  n_work_sprint="$(( $n_short_break + 1 ))"
   next_event="work sprint"
   j=0
   while [ $j -le $t_sleep ]; do 
     sec_remaining=$(( $t_sleep - $j ))
-	log_msg="$(pretty_time $sec_remaining) until $next_event ($sprint_count/$n_short_break)"
+	log_msg="$(pretty_time $sec_remaining) until $next_event ($sprint_count/$n_work_sprint)"
     write_mem "$log_msg" 
     sleep 1
     let "j+=1"
   done
   check_idle
+  work_sprint_start_msg "$sprint_count" "$n_work_sprint"
+}
+
+function work_sprint_start_msg() {
+  echo_v "$(date +'%H:%M') Starting next work sprint ($1/$2)"
+  if [[ $show_work_sprint_start == true ]]; then
+    notify-send "bashbreak" "Starting next work sprint ($1/$2)" --expire-time=5000
+  fi
 }
 
 function run_session() {
@@ -107,7 +120,7 @@ function run_session() {
     next_event="long break"
   fi 
 
-  # start work sprint
+  # start first work sprint
   run_work_sprint "$t_work_s" "$next_event" 1
 
   # (short break + work sprint) loop
@@ -123,18 +136,21 @@ function run_session() {
       notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
 
       # start short break
-      run_break "$t_short_break_s" "$i" 
+      sprint_count="$(( $i + 1 ))"
+      run_break "$t_short_break_s" "$sprint_count" 
 
       # determine next event type
       short_breaks_remaining="$(( $n_short_break - $i ))"
       if [ $short_breaks_remaining -eq 0 ]; then
         next_event="long break"
       else
-      next_event="short break"
+        next_event="short break"
       fi
 
+      break_count="$(( $i + 1 ))"
+
       # start work sprint
-	  run_work_sprint "$t_work_s" "$next_event" "$(( $i + 1 ))"
+	  run_work_sprint "$t_work_s" "$next_event" "$break_count"
     done
   fi
 
@@ -146,23 +162,21 @@ function run_session() {
 }
 
 function check_idle() {
-  # check if user idle
-  if [ -x "$(command -v xprintidle)" ]; then
-    t_idle=$(xprintidle) # user idle time in ms
-  if [ "$t_idle" -gt 10000 ]; then
-      (( t_idle_=t_idle+1 ))
-      while [ "$t_idle_" -ge "$t_idle" ]; do
-        write_mem "User idle"
-        sleep 1
-        t_idle_=$(xprintidle)
-      done
-  fi
-  else
-    echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle" >&2
-  fi
-  echo_v "$(date +'%H:%M') Starting next work sprint"
-  if [[ $show_work_sprint_start == true ]]; then
-    notify-send "bashbreak" "Starting next work sprint"
+  if [ check_idle_on = true ]; then
+    # check if user idle
+    if [ -x "$(command -v xprintidle)" ]; then
+      t_idle=$(xprintidle) # user idle time in ms
+	  if [ "$t_idle" -gt "$(( $idle_buffer * 1000 ))" ]; then
+        (( t_idle_=t_idle+1 ))
+        while [ "$t_idle_" -ge "$t_idle" ]; do
+          write_mem "User idle"
+          sleep 1
+          t_idle_=$(xprintidle)
+        done
+    fi
+    else
+      echo "$(date +'%H:%M') xprintidle not found. Not checking for user idle" >&2
+    fi
   fi
 }
 
