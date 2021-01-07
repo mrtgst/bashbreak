@@ -99,7 +99,7 @@ function run_break() {
   check_idle
 }
 
-function work_session() {
+function run_session() {
   # one work session is: work sprint -> (short break + work sprint) -> long break 
   if [ "$n_short_break" -ne 0 ]; then
     next_event="short break"
@@ -285,12 +285,12 @@ function main() {
   if [ "$n_session" -eq 0 ]; then
     # infinite number of sessions
     while true; do
-    work_session 
+    run_session 
     done
   else
   # finite number of sessions
     for i in $(seq 1 "$n_session"); do
-    work_session
+    run_session
     done
   fi
   clear_mem
