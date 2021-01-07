@@ -15,15 +15,16 @@ function help() {
 	echo "bashbreak v. ${version}"
 	echo ""
 	echo "Use:"
-	echo "		bashbreak [OPTION]..."
+	echo "	bashbreak [OPTION]..."
+	echo ""
 	echo "Options:"
-	echo "		-B			Run session in background"
-	echo "		-c			Edit config file"
-	echo "		-h			Print this help"
-	echo "		-n			Specify number of work sessions"
-	echo "		-q			Quit a running session"
-	echo "		-s			Print status message to stdout"
-	echo "		-S			Print status message as notification"
+	echo "	-B		Run session in background"
+	echo "	-c		Edit config file"
+	echo "	-h		Print this help"
+	echo "	-n		Specify number of work sessions"
+	echo "	-q		Quit a running session"
+	echo "	-s		Print status message to stdout"
+	echo "	-S		Print status message as notification"
 }
 
 function print_start_msg() {
@@ -58,7 +59,7 @@ function echo_v() {
 
 function pretty_time() {
 	# takes a time in s and displays it in min and s
-	min=$(( $1 / 60 ))
+	min=$(( $1 / 60 + 1 ))
 	sec=$(( $1 % 60 ))
 	if [ "$1" -ge 60 ]; then
 		echo "$min min"
