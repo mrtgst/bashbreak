@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.4"
+version="0.8.5"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -219,7 +219,7 @@ function kill_running() {
 function edit_config() {
 	# edit config file with text editor
 	# create user config from default if it does not exist
-	CONF_DIR=/etc/bashbreak
+	CONF_DIR=/etc
 	USER_CONF_DIR="$HOME"/.config
 	CONF_FILE=bashbreak.conf
 	if ! [ -e "$USER_CONF_DIR/$CONF_FILE" ]; then
