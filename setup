@@ -1,38 +1,31 @@
-#!/bin/sh
+#!/bin/bash
 
 INSTALL_DIR="/usr/local/bin"
-CONF_DIR="/etc/bashbreak"
+CONF_DIR="/etc"
 CONF_FILE="bashbreak.conf"
 
 install() {
 	echo "This will install bashbreak to $INSTALL_DIR. Continue? (Y/n) " 
 	read -r ANS
 	if [ "$ANS" != "${ANS#[Nn]}" ] ; then
-		echo "Installation cancelled."
+		echo "Cancelled."
    		exit	
 	else
 		echo "Copying bashbreak to $INSTALL_DIR ..."
-		cp bashbreak "$INSTALL_DIR" || exit 1
-		create_config "$CONF_FILE" "$CONF_DIR"
+		cp ./bashbreak "$INSTALL_DIR" || exit 1
+		echo "Copying default config file to $CONF_DIR/$CONF_FILE ..." 
+		cp ./"$CONF_FILE" "$CONF_DIR" || exit 1 
 	fi
 	echo "Installation completed."
 	echo "Type 'bashbreak -h' to see available commands."
 	exit
 }
 
-create_config() {
-	echo "Copying default config file to $2/$1 ..." 
-	if ! [ -d "$2" ]; then
-		mkdir "$2" || exit 1 
-	fi
-	cp ./"$1" "$2" || exit 1 
-}
-
 uninstall() {
-	echo "This will completely remove bashbreak and its config file. Continue? (Y/n) " 
+	echo "This will remove bashbreak and its config file. Continue? (Y/n) " 
 	read -r ANS
 	if [ "$ANS" != "${ANS#[Nn]}" ] ; then
-		echo "Uninstallation cancelled."
+		echo "Cancelled."
    		exit	
 	else
 		if [ -e "$INSTALL_DIR/bashbreak" ]; then
@@ -40,7 +33,6 @@ uninstall() {
 		fi
 		if [ -e "$CONF_DIR/$CONF_FILE" ]; then
 			rm -f "$CONF_DIR/$CONF_FILE"
-			rmdir "$CONF_DIR"
 		fi
 	fi
 	echo "Uninstallation completed."
@@ -49,11 +41,15 @@ uninstall() {
 }
 
 case "$1" in
+
 	"install")
 		install;;
+
 	"uninstall")
 		uninstall;;
+
 	*)
 		echo 'Unknown command. Use "install" or "uninstall".';;
 esac
+
 exit

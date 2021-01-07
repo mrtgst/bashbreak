@@ -1,11 +1,11 @@
 #!/bin/bash
-version="0.8.2"
+version="0.8.3"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
 	. "$HOME/.config/bashbreak.conf"
-elif [ -e "/etc/bashbreak/bashbreak.conf" ]; then 
-	. "/etc/bashbreak/bashbreak.conf"
+elif [ -e "/etc/bashbreak.conf" ]; then 
+	. "/etc/bashbreak.conf"
 else
 	. ./bashbreak.conf || exit 1
 fi
