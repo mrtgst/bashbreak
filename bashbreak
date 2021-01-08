@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.6"
+version="0.8.7"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -10,7 +10,17 @@ else
 	. ./bashbreak.conf || exit 1
 fi
 
-# define functions
+function print_config() {
+	work_time=$(( $t_work * $(( $n_short_break + 1 )) ))
+	echo "Work time: $work_time"
+	short_break_time=$(( $t_short_break * $n_short_break ))
+	echo "Short break time: $short_break_time"
+	long_break_time=$t_long_break
+	echo "Long break time: $long_break_time"
+	total_time=$(( $work_time + $short_break_time + $long_break_time ))
+	echo "Total session time: $total_time"
+}
+
 function help() {
 	echo "bashbreak v. ${version}"
 	echo ""
@@ -19,7 +29,8 @@ function help() {
 	echo ""
 	echo "Options:"
 	echo "	-B		Run session in background"
-	echo "	-c		Edit config file"
+	echo "	-c		Edit/create user config file"
+	echo "	-C		Print work session information of the current config file"
 	echo "	-h		Print this help"
 	echo "	-n		Specify number of work sessions"
 	echo "	-q		Quit a running session"
@@ -266,7 +277,7 @@ pcount=$(pgrep --count bashbreak)
 				
 if [ "$pcount" -gt 1 ]; then
 	# start cropped CLI loop
-	while getopts ":chqsS" OPT; do
+	while getopts ":cChqsS" OPT; do
 		case $OPT in
 			h)
 				help; exit;;
@@ -285,6 +296,10 @@ if [ "$pcount" -gt 1 ]; then
 				edit_config
 				exit;;
 
+			C)
+				print_config
+				exit;;
+
 			q)
 				kill_running;;
 
@@ -301,7 +316,7 @@ if [ "$pcount" -gt 1 ]; then
 fi
 
 # main CLI loop
-optstring=":hcn:b:Bq"
+optstring=":hcCn:b:Bq"
 while getopts $optstring OPT; do
 	case $OPT in
 		h)
@@ -315,6 +330,10 @@ while getopts $optstring OPT; do
 
 		c)
 			edit_config
+			exit;;
+
+		C)
+			print_config
 			exit;;
 
 		q)
