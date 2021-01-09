@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.7"
+version="0.8.8"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -9,17 +9,6 @@ elif [ -e "/etc/bashbreak.conf" ]; then
 else
 	. ./bashbreak.conf || exit 1
 fi
-
-function print_config() {
-	work_time=$(( $t_work * $(( $n_short_break + 1 )) ))
-	echo "Work time: $work_time"
-	short_break_time=$(( $t_short_break * $n_short_break ))
-	echo "Short break time: $short_break_time"
-	long_break_time=$t_long_break
-	echo "Long break time: $long_break_time"
-	total_time=$(( $work_time + $short_break_time + $long_break_time ))
-	echo "Total session time: $total_time"
-}
 
 function help() {
 	echo "bashbreak v. ${version}"
@@ -38,26 +27,40 @@ function help() {
 	echo "	-S		Print status message as notification"
 }
 
+function print_config() {
+	work_time=$(( $t_work * $(( $n_short_break + 1 )) ))
+	echo "Work time: $work_time"
+	short_break_time=$(( $t_short_break / 60 * $n_short_break ))
+	echo "Short break time: $short_break_time"
+	long_break_time=$t_long_break
+	echo "Long break time: $long_break_time"
+	total_time=$(( $work_time + $short_break_time + $long_break_time ))
+	echo "Total session time: $total_time"
+}
+
+function notify() {
+	expire_time=$(( $2 * 1000 ))
+	notify-send "bashbreak" "$1" --expire-time="$expire_time" --hint=int:transient:1
+}
+
 function print_start_msg() {
 	# adapt start msg to number of sessions
+	t_short_break_p="$( pretty_time $t_short_break )"
 	if [ "$n_session" -eq 0 ]; then
-		start_msg="Starting work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
+		start_msg="Starting work sessions with $t_work min work sprints and $t_short_break_p short breaks $n_short_break times before a $t_long_break min long break"
 	elif [ "$n_session" -eq 1 ]; then
-		start_msg="Starting work session with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
+		start_msg="Starting work session with $t_work min work sprints and $t_short_break_p short breaks $n_short_break times before a $t_long_break min long break"
 	else
-		start_msg="Starting $n_session work sessions with $t_work min work sprints and $t_short_break min short breaks $n_short_break times before a $t_long_break min long break"
+		start_msg="Starting $n_session work sessions with $t_work min work sprints and $t_short_break_p short breaks $n_short_break times before a $t_long_break min long break"
 	fi
 	echo_v "$(date +'%H:%M') $start_msg"
-	notify-send "bashbreak" "$start_msg" --expire-time=10000 --hint=int:transient:1
+	notify "$start_msg" 10 
 }
 
 function convert_time() {
 	# convert time to ms or min
 	(( t_work_s=t_work*60 ))
-	(( t_short_break_s=t_short_break*60 ))
-	(( t_short_break_ms=t_short_break_s*1000 ))
 	(( t_long_break_s=t_long_break*60 ))
-	(( t_long_break_ms=t_long_break_s*1000 ))
 }
 
 function echo_v() {
@@ -69,13 +72,12 @@ function echo_v() {
 }
 
 function pretty_time() {
-	# takes a time in s and displays it in min and s
+	# takes a time in s and displays it with "min" suffix if above 60 s, else "sec" 
 	min=$(( $1 / 60 + 1 ))
-	sec=$(( $1 % 60 ))
-	if [ "$1" -ge 60 ]; then
+	if [ "$1" -gt 60 ]; then
 		echo "$min min"
 	else
-		echo "$sec sec"
+		echo "$1 sec"
 	fi
 }
 
@@ -122,7 +124,7 @@ function run_break() {
 function work_sprint_start_msg() {
 	echo_v "$(date +'%H:%M') Starting next work sprint ($1/$2)"
 	if [ "$show_work_sprint_start" == true ]; then
-		notify-send "bashbreak" "Starting next work sprint ($1/$2)" --expire-time=5000
+		notify "Starting next work sprint ($1/$2)" 5
 	fi
 }
 
@@ -146,13 +148,13 @@ function run_session() {
 			n_work_sprint="$(( $n_short_break - 1 ))" 
 			sprint_frac="$i/$n_work_sprint"
 			short_break_frac="$i/$n_short_break"
-			msg="Take a $t_short_break min break ($short_break_frac)"
+			msg="Take a $t_short_break break ($short_break_frac)"
 			echo_v "$(date +'%H:%M') $msg"
-			notify-send "bashbreak" "$msg" --expire-time="$t_short_break_ms" --hint=int:transient:1
+			notify "$msg" "$t_short_break" 
 
 			# start short break
 			sprint_count="$(( $i + 1 ))"
-			run_break "$t_short_break_s" "$sprint_count" 
+			run_break "$t_short_break" "$sprint_count" 
 
 			# determine next event type
 			short_breaks_remaining="$(( $n_short_break - $i ))"
@@ -173,7 +175,7 @@ function run_session() {
 	# start long break
 	msg="Take a $t_long_break min break"
 	echo_v "$(date +'%H:%M') $msg"
-	notify-send "bashbreak" "$msg" --expire-time="$t_long_break_ms" --hint=int:transient:1
+	notify "$msg" "$t_long_break_s"
 	run_break "$t_long_break_s" 1 
 }
 
@@ -224,7 +226,7 @@ function get_status() {
 
 function kill_running() {
 	# clear memory and kill running instance
-	notify-send "bashbreak" "Terminated"
+	notify "Terminated" 3
 	echo_v "Terminated"
 	clear_mem
 	pkill -9 "bashbreak" 
@@ -253,7 +255,7 @@ function create_config() {
 # main program
 function main() {
 	# make trap to notify and clear mem on kill signal
-	trap 'notify-send "bashbreak" "Terminated"; echo_v "`date +"%H:%M"` Terminated"; clear_mem; exit' SIGINT SIGTERM
+	trap 'notify "Terminated" 3; echo_v "`date +"%H:%M"` Terminated"; clear_mem; exit' SIGINT SIGTERM
 	convert_time
 	print_start_msg
 	# main loop
@@ -268,6 +270,9 @@ function main() {
 		for i in $(seq 1 "$n_session"); do
 		run_session
 		done
+		msg="Session(s) completed, exiting"
+		echo_v "$msg" 
+		notify "$msg" 3
 	fi
 	clear_mem
 }
@@ -289,7 +294,7 @@ if [ "$pcount" -gt 1 ]; then
 
 			S) # print status as notification
 				get_status
-				notify-send "bashbreak" "$status_msg" --expire-time=5000
+				notify "$status_msg" 3 
 				exit;;
 
 			c)
