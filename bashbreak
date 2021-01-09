@@ -148,7 +148,7 @@ function run_session() {
 			n_work_sprint="$(( $n_short_break - 1 ))" 
 			sprint_frac="$i/$n_work_sprint"
 			short_break_frac="$i/$n_short_break"
-			msg="Take a $t_short_break break ($short_break_frac)"
+			msg="Take a "$( pretty_time $t_short_break )" break ($short_break_frac)"
 			echo_v "$(date +'%H:%M') $msg"
 			notify "$msg" "$t_short_break" 
 
