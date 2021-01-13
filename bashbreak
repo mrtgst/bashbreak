@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.8"
+version="0.8.9"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -19,8 +19,8 @@ function help() {
 	echo "Options:"
 	echo "	-B		Run session in background"
 	echo "	-c		Edit/create user config file"
-	echo "	-C		Print work session information of the current config file"
 	echo "	-h		Print this help"
+	echo "	-i		Print work session information from the current config file"
 	echo "	-n		Specify number of work sessions"
 	echo "	-q		Quit a running session"
 	echo "	-s		Print status message to stdout"
@@ -282,7 +282,7 @@ pcount=$(pgrep --count bashbreak)
 				
 if [ "$pcount" -gt 1 ]; then
 	# start cropped CLI loop
-	while getopts ":cChqsS" OPT; do
+	while getopts ":cihqsS" OPT; do
 		case $OPT in
 			h)
 				help; exit;;
@@ -301,7 +301,7 @@ if [ "$pcount" -gt 1 ]; then
 				edit_config
 				exit;;
 
-			C)
+			i)
 				print_config
 				exit;;
 
@@ -321,7 +321,7 @@ if [ "$pcount" -gt 1 ]; then
 fi
 
 # main CLI loop
-optstring=":hcCn:b:Bq"
+optstring=":hcin:b:Bq"
 while getopts $optstring OPT; do
 	case $OPT in
 		h)
@@ -337,7 +337,7 @@ while getopts $optstring OPT; do
 			edit_config
 			exit;;
 
-		C)
+		i)
 			print_config
 			exit;;
 
