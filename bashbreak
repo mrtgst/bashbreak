@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.9"
+version="0.8.10"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -72,13 +72,9 @@ function echo_v() {
 }
 
 function pretty_time() {
-	# takes a time in s and displays it with "min" suffix if above 60 s, else "sec" 
-	min=$(( $1 / 60 + 1 ))
-	if [ "$1" -gt 60 ]; then
-		echo "$min min"
-	else
-		echo "$1 sec"
-	fi
+	# takes a time in s and displays it with "min" suffix
+	min=$(( ($1 - 1) / 60 + 1 ))
+	echo "$min min"
 }
 
 function run_work_sprint() {
@@ -282,10 +278,18 @@ pcount=$(pgrep --count bashbreak)
 				
 if [ "$pcount" -gt 1 ]; then
 	# start cropped CLI loop
-	while getopts ":cihqsS" OPT; do
+	while getopts ":chisSq" OPT; do
 		case $OPT in
+			c)
+				edit_config
+				exit;;
+
 			h)
 				help; exit;;
+
+			i)
+				print_config
+				exit;;
 
 			s) # print status to stdout
 				get_status
@@ -295,14 +299,6 @@ if [ "$pcount" -gt 1 ]; then
 			S) # print status as notification
 				get_status
 				notify "$status_msg" 3 
-				exit;;
-
-			c)
-				edit_config
-				exit;;
-
-			i)
-				print_config
 				exit;;
 
 			q)
