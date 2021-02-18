@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.8.10"
+version="0.9.0"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -20,7 +20,7 @@ function help() {
 	echo "	-B		Run session in background"
 	echo "	-c		Edit/create user config file"
 	echo "	-h		Print this help"
-	echo "	-i		Print work session information from the current config file"
+	echo "	-i		Print current config file information"
 	echo "	-n		Specify number of work sessions"
 	echo "	-q		Quit a running session"
 	echo "	-s		Print status message to stdout"
@@ -29,13 +29,21 @@ function help() {
 
 function print_config() {
 	work_time=$(( $t_work * $(( $n_short_break + 1 )) ))
-	echo "Work time: $work_time"
 	short_break_time=$(( $t_short_break / 60 * $n_short_break ))
-	echo "Short break time: $short_break_time"
 	long_break_time=$t_long_break
-	echo "Long break time: $long_break_time"
 	total_time=$(( $work_time + $short_break_time + $long_break_time ))
-	echo "Total session time: $total_time"
+	echo "Current configuration:"
+	echo "    $t_work min work sprints"
+	echo "    $n_short_break short breaks"
+	echo "    $t_short_break sec short breaks"
+	echo "    $t_long_break min long break"
+	echo ""
+	echo "One work session totals $total_time min:"
+	echo "    Total work time: $work_time min"
+	echo "    Total short break time: $short_break_time min"
+	echo "    Total long break time: $long_break_time min"
+	echo ""
+	echo "Change configuration with -c"
 }
 
 function notify() {
