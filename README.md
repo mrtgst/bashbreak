@@ -6,7 +6,7 @@ Taking regular breaks increases focus and prevents repetitive strain injury; it'
 
 ## Instructions 
 
-You have two kinds of breaks during a work session: short and long. By default, you have 10 min work sprints, separated by short breaks of 1 min and with a long break of 15 min after 4 work sprints. Thus, each "work session" totals 1 h (including the breaks). You can of course change the settings to your liking.
+You have two kinds of breaks during a **work session**: short and long. By default, you have 10 min work sprints, separated by short breaks of 1 min. After four such work sprints there is a long break of 15 min. Thus, each work session including breaks totals 1 h. You can of course change the settings to your liking.
 
 When a break is over, `bashbreak` checks if you are active at the computer before it starts the next work sprint.
 
@@ -45,6 +45,9 @@ To remove bashbreak and its config files you can call the above setup-script wit
 ## Dependencies
 `bashbreak` can run just in your terminal using bash builtins, but the desktop notifications and idle time checker have some further dependencies.
 
-To see desktop notifications you need `libnotify` and a notification daemon installed, which is standard on most Linux distros running a desktop environment such as GNOME, KDE, LXDE etc. If you are not running a full DE, see [wiki.archlinux.org/index.php/Desktop_notifications](https://wiki.archlinux.org/index.php/Desktop_notifications).
+To see desktop notifications you need `libnotify` and a notification daemon installed, which is standard on most Linux distros running a desktop environment. If you are not running a full DE, see [wiki.archlinux.org/index.php/Desktop_notifications](https://wiki.archlinux.org/index.php/Desktop_notifications).
 
 To check for user idle time, `bashbreak` uses `xprintidle`, which further assumes you are running the X Window System.
+
+## About
+Written by Martin Gustavsson, released under GPLv3 license.
