@@ -1,5 +1,5 @@
 #!/bin/bash
-version="0.9.0"
+version="0.9.1"
 
 # source config file
 if [ -e "$HOME/.config/bashbreak.conf" ]; then 
@@ -261,6 +261,8 @@ function main() {
 	# make trap to notify and clear mem on kill signal
 	trap 'notify "Terminated" 3; echo_v "`date +"%H:%M"` Terminated"; clear_mem; exit' SIGINT SIGTERM
 	convert_time
+	# clear terminal
+	clear
 	print_start_msg
 	# main loop
 	create_mem
