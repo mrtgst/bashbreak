@@ -48,7 +48,7 @@ function print_config() {
 
 function notify() {
 	expire_time=$(( $2 * 1000 ))
-	notify-send "bashbreak" "$1" --expire-time="$expire_time" --hint=int:transient:1
+	notify-send "bashbreak" "$1" --expire-time="$expire_time" --hint=int:transient:1 2>/dev/null
 }
 
 function print_start_msg() {
